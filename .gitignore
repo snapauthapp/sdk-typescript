@@ -1,0 +1,17 @@
+# Node.js
+node_modules/
+
+# TypeScript
+*.tsbuildinfo
+*.js
+*.js.map
+
+# IDEs
+.vscode/
+.idea/
+
+# Test coverage
+coverage/
+
+# Compiled output
+dist/
