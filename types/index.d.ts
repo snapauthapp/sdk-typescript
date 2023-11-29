@@ -15,9 +15,9 @@ declare global {
     timeout?: number // unsigned long
     excludeCredentials?: PublicKeyCredentialDescriptorJSON[]
     authenticatorSelection?: AuthenticatorSelectionCriteria
-    hints?: string[]
-    attestation?: string // strict me?
-    attestationFormats?: string[] // same
+    hints?: PublicKeyCredentialHints[]
+    attestation?: AttestationConveyancePreference
+    attestationFormats?: AuthenticatorAttestationStatementFormat[]
     extensions?: AuthenticatorExtensionsClientInputsJSON
   }
 
@@ -26,11 +26,17 @@ declare global {
     timeout?: number // unsigned long
     rpId?: string
     allowCredentials?: PublicKeyCredentialDescriptorJSON[]
-    userVerification?: string // type me
-    hints?: stringg[] // type me
-    attestation?: string // strict me?
-    attestationFormats?: string[] // same
+    userVerification?: UserVerificationRequirement
+    hints?: PublicKeyCredentialHints[]
+    attestation?: AttestationConveyancePreference
+    attestationFormats?: AuthenticatorAttestationStatementFormat[]
     extensions?: AuthenticatorExtensionsClientInputsJSON
+  }
+
+  interface PublicKeyCredentialDescriptorJSON {
+    id: Base64URLString
+    type: PublicKeyCredentialType
+    transports?: AuthenticatorTransport[]
   }
 
   // Browsers are starting to support direct serialization to JSON with
@@ -40,9 +46,9 @@ declare global {
   }
   // Same for request extensions
   interface PublicKeyCredentialRequestOptions {
-    hints?: string[],
-    attestation?: string
-    attestationFormats?: string[]
+    hints?: PublicKeyCredentialHints[],
+    attestation?: AttestationConveyancePreference
+    attestationFormats?: AuthenticatorAttestationStatementFormat[]
   }
   // And responses
   interface AuthenticatorAssertionResponse {
@@ -63,17 +69,17 @@ declare global {
     id: Base64URLString
     rawId: Base64URLString
     response: AuthenticatorAttestationResponseJSON
-    authenticatorAttachment?: string
+    authenticatorAttachment?: AuthenticatorAttachment
     clientExtensionResults: AuthenticationExtensionsClientOutputsJSON
-    type: string
+    type: PublicKeyCredentialType
   }
   interface AuthenticationResponseJSON {
     id: Base64URLString
     rawId: Base64URLString
     response: AuthenticatorAssertionResponseJSON
-    authenticatorAttachment?: string
+    authenticatorAttachment?: AuthenticatorAttachment
     clientExtensionResults: AuthenticationExtensionsClientOutputsJSON
-    type: string
+    type: PublicKeyCredentialType
   }
 
 
@@ -82,10 +88,10 @@ declare global {
 
 
   // These aren't official per se, but make the json wire formats clearer
-  interface CredentialCreationOptionsJSON extends CredentialCreationOptions {
+  interface CredentialCreationOptionsJSON extends Omit<CredentialCreationOptions, "signal"> {
     publicKey: PublicKeyCredentialCreationOptionsJSON
   }
-  interface CredentialRequestOptionsJSON extends CredentialRequestOptions {
+  interface CredentialRequestOptionsJSON extends Omit<CredentialRequestOptions, "signal"> {
     publicKey: PublicKeyCredentialRequestOptionsJSON
   }
 
@@ -103,7 +109,7 @@ export type PublicKeyCredentialJSON = RegistrationResponseJSON | AuthenticationR
 export type AuthenticatorAttestationResponseJSON = {
   clientDataJSON: Base64URLString
   authenticatorData: Base64URLString;
-  transports: string[]
+  transports: AuthenciatorTransport[]
   // The publicKey field will be missing if pubKeyCredParams was used to
   // negotiate a public-key algorithm that the user agent doesn’t
   // understand. (See section “Easily accessing credential data” for a
@@ -125,11 +131,11 @@ export type PublicKeyCredentialUserEntityJSON = {
   name: string
   displayName: string
 }
-export type PublicKeyCredentialDescriptorJSON = {
-  id: Base64URLString
-  type: string
-  transports?: string[]
-}
 export type AuthenticatorExtensionsClientInputsJSON = {
 }
 
+// https://www.w3.org/TR/webauthn-3/#enumdef-publickeycredentialhints
+type PublicKeyCredentialHints = 'security-key' | 'client-device' | 'hybrid'
+
+// https://www.iana.org/assignments/webauthn/webauthn.xhtml
+type AuthenticatorAttestationStatementFormat = 'packed' | 'tpm' | 'android-key' | 'android-safetynet' | 'fido-u2f' | 'apple' | 'none'

@@ -4,20 +4,26 @@ import {
 
 export const parseRequestOptions = (json: CredentialRequestOptionsJSON): CredentialRequestOptions => {
   let getOptions: CredentialRequestOptions = {}
+  getOptions.mediation = json.mediation
   if (PublicKeyCredential.parseRequestOptionsFromJSON) {
     console.debug('native ROFJ')
-    let pk = PublicKeyCredential.parseRequestOptionsFromJSON(json.publicKey)
-    getOptions.publicKey = pk
+    getOptions.publicKey = PublicKeyCredential.parseRequestOptionsFromJSON(json.publicKey)
     // other flags from response?
   } else {
     console.debug('manual pROFJ')
     // Manually remap buffersources
+    getOptions.publicKey = {
+      ...json.publicKey,
+      allowCredentials: json.publicKey.allowCredentials?.map(parseDescriptor),
+      challenge: toAB(json.publicKey.challenge),
+    }
     let pk = json.publicKey
-    pk.challenge = toAB(pk.challenge)
-    pk.allowCredentials.forEach(cred => cred.id = toAB(cred.id))
-    getOptions.publicKey = pk
+    // pk.challenge = toAB(pk.challenge)
+    // pk.allowCredentials.forEach(cred => cred.id = toAB(cred.id))
+    // getOptions.publicKey = pk
     // manual mode
   }
+  /*
   // HACK, remove (not needed?)
   if (getOptions.publicKey.allowCredentials.length === 0) {
     delete getOptions.publicKey.allowCredentials
@@ -26,6 +32,7 @@ export const parseRequestOptions = (json: CredentialRequestOptionsJSON): Credent
   getOptions.publicKey.attestationFormats = json.publicKey.attestationFormats
   getOptions.publicKey.extensions = json.publicKey.extensions
   // Splat other options outside of PK back in
+  // */
   // add abort signal?
   return getOptions
 }
@@ -38,12 +45,20 @@ export const parseCreateOptions = (json: CredentialCreationOptionsJSON): Credent
     createOptions.publicKey = PublicKeyCredential.parseCreationOptionsFromJSON(json.publicKey)
   } else {
     console.debug('fallback pCOFJ')
-    // fabllack
-    json.publicKey.user.id = toAB(json.publicKey.user.id)
-    json.publicKey.challenge = toAB(json.publicKey.challenge)
+    createOptions.publicKey = {
+      ...json.publicKey,
+      challenge: toAB(json.publicKey.challenge),
+      excludeCredentials: json.publicKey.excludeCredentials?.map(parseDescriptor),
+      user: {
+        ...json.publicKey.user,
+        id: toAB(json.publicKey.user.id),
+      }
+    }
+    // json.publicKey.user.id = toAB(json.publicKey.user.id)
+    // json.publicKey.challenge = toAB(json.publicKey.challenge)
     // TODO: what other fields need converting?
     // - excludeCrentials at least
-    createOptions = opts
+    // createOptions = opts
   }
   console.debug(createOptions)
   // if (!createOptions.publicKey.extensions) {
@@ -54,6 +69,11 @@ export const parseCreateOptions = (json: CredentialCreationOptionsJSON): Credent
   // TODO: abortSignal?
   return createOptions
 }
+
+const parseDescriptor = (json: PublicKeyCredentialDescriptorJSON): PublicKeyCredentialDescriptor => ({
+  ...json,
+  id: toAB(json.id),
+})
 
 /**
  * Add WebAuthn Level 3 type info that's missing from TS
