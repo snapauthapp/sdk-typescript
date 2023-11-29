@@ -23,7 +23,7 @@ export const registrationResponseToJSON = (credential: PublicKeyCredential): Reg
       authenticatorData: toB64(response.getAuthenticatorData()),
       attestationObject: toB64(response.attestationObject),
     },
-    authenticatorAttachment: credential.authenticatorAttachment ?? undefined,
+    authenticatorAttachment: credential.authenticatorAttachment as AuthenticatorAttachment ?? undefined,
     clientExtensionResults: credential.getClientExtensionResults(), // ??
   }
  }
@@ -37,7 +37,7 @@ export const authenticationResponseToJSON = (credential: PublicKeyCredential): A
   console.debug('get() response encoded manually')
   // todo: how to cast credential.response to AuthenticatorAssertionResponse?
   const response = credential.response as AuthenticatorAssertionResponse
-  return {
+  return  {
     id: credential.id,
     rawId: toB64(credential.rawId),
     type: credential.type,

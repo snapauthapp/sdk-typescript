@@ -54,14 +54,10 @@ declare global {
   interface AuthenticatorAssertionResponse {
     attestationObject: ArrayBuffer | null
   }
-
-
-  interface AuthenticatorAssertionResponseJSON {
-    clientDataJSON: Base64URLString
-    authenticatorData: Base64URLString;
-    signature: Base64URLString;
-    userHandle?: Base64URLString;
-    attestationObject?: Base64URLString;
+  // Layer in some more specific type info where the fields are defined (should upstream?)
+  interface PublicKeyCredential {
+    readonly authenticatorAttachment: AuthenticatorAttachment | null
+    readonly type: PublicKeyCredentialType
   }
 
   // Wire formats
@@ -80,6 +76,14 @@ declare global {
     authenticatorAttachment?: AuthenticatorAttachment
     clientExtensionResults: AuthenticationExtensionsClientOutputsJSON
     type: PublicKeyCredentialType
+  }
+
+  interface AuthenticatorAssertionResponseJSON {
+    clientDataJSON: Base64URLString
+    authenticatorData: Base64URLString;
+    signature: Base64URLString;
+    userHandle?: Base64URLString;
+    attestationObject?: Base64URLString;
   }
 
 
