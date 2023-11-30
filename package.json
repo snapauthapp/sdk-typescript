@@ -1,5 +1,5 @@
 {
-  "name": "my-sdk",
+  "name": "@webauthnbiz/sdk",
   "version": "1.0.0",
   "description": "My Awesome SDK",
   "main": "dist/index.js",
