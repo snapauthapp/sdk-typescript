@@ -83,14 +83,11 @@ class SDK {
       return false
     }
 
-    console.debug('cma not done yet')
-    return true
     // available, let's gooo
-    const user = undefined // empty object instead?
     // try/catch?
     // const token = await this.startAuth(user)
     // merge w/ startAith?
-    const res = await this.api('/auth/createOptions', undefined)
+    const res = await this.api('/auth/createOptions', {})
     const options = parseRequestOptions(res)
     const response = await this.doAuth(options, undefined)
     callback(response)
