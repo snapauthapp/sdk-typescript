@@ -16,8 +16,12 @@ import {
 /**
  * API formats
  */
-type AuthResponse = string
-type RegisterResponse = string
+type AuthResponse = {
+  token: string
+}
+type RegisterResponse = {
+  token: string
+}
 
 type UserIdOrHandle =
   | { id: string }
@@ -76,10 +80,12 @@ class SDK {
 
   async handleAutofill(callback: (arg0: AuthResponse) => void) {
     if (!PublicKeyCredential.isConditionalMediationAvailable) {
+      console.debug('CMA feature does not exist')
       return false
     }
     const isCMA = await PublicKeyCredential.isConditionalMediationAvailable()
     if (!isCMA) {
+      console.debug('!CMA')
       return false
     }
 
