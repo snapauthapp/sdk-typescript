@@ -16,6 +16,8 @@ import {
 /**
  * API formats
  */
+// success:true, token: string
+// success:false, error: info?
 type AuthResponse = {
   token: string
 }
