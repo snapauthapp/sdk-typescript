@@ -107,7 +107,7 @@ class SDK {
     console.debug(options)
     try {
       const result = await navigator.credentials.get(options)
-      if (!result || !this.isPublicKeyCredential(result)) throw new Error('wat')
+      if (!this.isPublicKeyCredential(result)) throw new Error('wat')
       console.debug(result)
       return await this.processGetCredential(result, user)
     } catch (error) {
