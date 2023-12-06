@@ -68,26 +68,31 @@ class SDK {
   }
 
   async startRegister(user: UserRegistrationInfo): Promise<RegisterResponse> {
-    this.requireWebAuthn()
-    const res = await this.api('/registration/createOptions', { user })
-    const options = parseCreateOptions(res)
-    console.debug(options)
-    const credential = await navigator.credentials.create(options)
-    console.debug(credential)
-    if (!this.isPublicKeyCredential(credential)) {
-      throw new Error('wat')
-    }
-    const json = registrationResponseToJSON(credential)
-    console.debug(json)
-    // const cer = credential.getClientExtensionResults && credential.getClientExtensionResults()
-    // console.debug(cer)
-    //user.handle = this._toBase64Url(res.publicKey.user.id)
+    try {
+      this.requireWebAuthn()
+      const res = await this.api('/registration/createOptions', { user })
+      const options = parseCreateOptions(res)
+      console.debug(options)
+      const credential = await navigator.credentials.create(options)
+      console.debug(credential)
+      if (!this.isPublicKeyCredential(credential)) {
+        throw new Error('wat')
+      }
+      const json = registrationResponseToJSON(credential)
+      console.debug(json)
+      // const cer = credential.getClientExtensionResults && credential.getClientExtensionResults()
+      // console.debug(cer)
+      //user.handle = this._toBase64Url(res.publicKey.user.id)
 
-    // @ts-ignore
-    const data = await this.api('/registration/process', { credential: json, user })
-    return {
-      ok: true,
-      ...data,
+      // @ts-ignore
+      const data = await this.api('/registration/process', { credential: json, user })
+      return {
+        ok: true,
+        ...data,
+      }
+    } catch (error) {
+      console.error(error)
+      return { ok: false }
     }
   }
 
