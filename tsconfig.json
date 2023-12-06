@@ -9,6 +9,7 @@
     "forceConsistentCasingInFileNames": true,
     "outDir": "./dist",
     "sourceMap": true,
+    "removeComments": true,
     "declaration": true
   },
   "include": ["src", "types"],
