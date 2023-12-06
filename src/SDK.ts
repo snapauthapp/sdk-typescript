@@ -39,9 +39,9 @@ class SDK {
   private apiKey: string
   private host: string
 
-  constructor(publicKey: string) {
+  constructor(publicKey: string, host: string = 'https://api.webauthn.biz') {
     this.apiKey = publicKey
-    this.host = 'http://localhost:9987'
+    this.host = host
   }
 
   get isWebAuthnAvailable() {
