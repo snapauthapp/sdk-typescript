@@ -18,11 +18,17 @@ import {
  */
 // success:true, token: string
 // success:false, error: info?
-type AuthResponse = {
+export type AuthResponse = {
+  ok: true
   token: string
+} | {
+  ok: false
 }
-type RegisterResponse = {
+export type RegisterResponse = {
+  ok: true
   token: string
+} | {
+  ok: false
 }
 
 type UserIdOrHandle =
@@ -72,12 +78,17 @@ class SDK {
       throw new Error('wat')
     }
     const json = registrationResponseToJSON(credential)
+    console.debug(json)
     // const cer = credential.getClientExtensionResults && credential.getClientExtensionResults()
     // console.debug(cer)
     //user.handle = this._toBase64Url(res.publicKey.user.id)
 
     // @ts-ignore
-    return this.api('/registration/process', { credential: json, user })
+    const data = await this.api('/registration/process', { credential: json, user })
+    return {
+      ok: true,
+      ...data,
+    }
   }
 
   async handleAutofill(callback: (arg0: AuthResponse) => void) {
@@ -103,7 +114,7 @@ class SDK {
 
 
 
-  private async doAuth(options: CredentialRequestOptions, user: UserIdOrHandle|undefined) {
+  private async doAuth(options: CredentialRequestOptions, user: UserIdOrHandle|undefined): Promise<AuthResponse> {
     console.debug(options)
     try {
       const result = await navigator.credentials.get(options)
@@ -113,16 +124,22 @@ class SDK {
     } catch (error) {
       // welp, problem. ok. what's the error handling story here?
       console.error(error)
+      return { ok: false }
     }
   }
 
-  private async processGetCredential(credential: PublicKeyCredential, user: OptionalUserIdOrHandle) {
+  private async processGetCredential(credential: PublicKeyCredential, user: OptionalUserIdOrHandle): Promise<AuthResponse> {
     const json = authenticationResponseToJSON(credential)
+    console.debug(json)
     // user info of some kind needed for credential lookup when user handle is not present.
     // technically the remote server could look up by credential id, but that's a bad idea.
 
     // @ts-ignore
-    return this.api('/auth/process', { credential: json, user })
+    const data = await this.api('/auth/process', { credential: json, user })
+    return {
+      ok: true, // FIXME: look for errors,
+      ...data,
+    }
   }
 
   private async api(path: string, body: JsonEncodable) {
