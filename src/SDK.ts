@@ -99,8 +99,12 @@ class SDK {
       return response
     } catch (error) {
       console.error(error)
-      // @ts-ignore
-      return { ok: false, error: 'tbd', more: [error.name, error.message] }
+      return {
+        ok: false,
+        error: 'tbd',
+        // @ts-ignore
+        more: [error.name, error.message],
+      }
     }
   }
 
@@ -141,13 +145,17 @@ class SDK {
     } catch (error) {
       // welp, problem. ok. what's the error handling story here?
       console.error(error)
-      // @ts-ignore
       // NotAllowedError = canceled by user OR webauthn timeout exceeded
       // Safari:
       // error.message = "This request has been cancelled by the user."
       // ^ "Operation timed out."
       // Firefox: "The request is not allowed by the user agent or the platform in the current context, possibly because the user denied permission."
-      return { ok: false, error: 'tbd', more: [error.name, error.message] }
+      return {
+        ok: false,
+        error: 'tbd',
+        // @ts-ignore
+        more: [error.name, error.message],
+      }
     }
   }
 
@@ -174,7 +182,7 @@ class SDK {
       body: JSON.stringify(body),
       headers,
       method: 'POST',
-      signal: AbortSignal.timeout(50),
+      signal: AbortSignal.timeout(500),
     })
     // TODO: timeouts?
     try {
