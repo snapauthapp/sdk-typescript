@@ -182,7 +182,7 @@ class SDK {
       body: JSON.stringify(body),
       headers,
       method: 'POST',
-      signal: AbortSignal.timeout(500),
+      signal: AbortSignal.timeout(5000),
     })
     // TODO: timeouts?
     try {
