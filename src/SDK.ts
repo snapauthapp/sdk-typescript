@@ -194,7 +194,8 @@ class SDK {
           more: [response.status, response.statusText],
         }
       }
-      return { ok: true, data: await response.json() }
+      const parsed = await response.json()
+      return { ok: true, data: parsed.result }
     } catch (error) {
       // error.name, error.message, cause
       // TypeError, "Failed to fetch", bad destination edge
