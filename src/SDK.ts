@@ -175,7 +175,7 @@ class SDK {
     const headers = new Headers({
       Accept: 'application/json',
       'Content-type': 'application/json',
-      Authorization: `Bearer ${this.apiKey}`,
+      Authorization: `Basic ${btoa(this.apiKey + ':')}`,
     })
 
     const request = new Request(this.host + path, {
