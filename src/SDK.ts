@@ -77,7 +77,9 @@ class SDK {
   async startRegister(user: UserRegistrationInfo): Promise<RegisterResponse> {
     try {
       this.requireWebAuthn()
-      const res = await this.api('/registration/createOptions', { user }) as Result<CredentialCreationOptionsJSON, WebAuthnError>
+      // @ts-ignore Strip user name info before sending, it gets added back in later locally
+      const remoteUserData: UserIdOrHandle = { id: user.id, handle: user.handle }
+      const res = await this.api('/registration/createOptions', { user: remoteUserData }) as Result<CredentialCreationOptionsJSON, WebAuthnError>
       if (!res.ok) {
         return res
       }
