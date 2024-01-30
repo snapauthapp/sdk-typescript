@@ -1,6 +1,7 @@
 import {
   base64URLToArrayBuffer as toAB,
 } from './utils'
+import { UserRegistrationInfo } from './SDK'
 
 export const parseRequestOptions = (json: CredentialRequestOptionsJSON): CredentialRequestOptions => {
   let getOptions: CredentialRequestOptions = {}
@@ -37,9 +38,17 @@ export const parseRequestOptions = (json: CredentialRequestOptionsJSON): Credent
   return getOptions
 }
 
-export const parseCreateOptions = (json: CredentialCreationOptionsJSON): CredentialCreationOptions => {
+export const parseCreateOptions = (user: UserRegistrationInfo, json: CredentialCreationOptionsJSON): CredentialCreationOptions => {
+  // Locally merge in user.name and displayName - they are never sent out and
+  // not part of the server response.
+  json.publicKey.user = {
+    ...json.publicKey.user,
+    name: user.name,
+    displayName: user.displayName ?? user.name,
+  }
+
   let createOptions: CredentialCreationOptions = {}
-  console.debug(createOptions)
+
   if (PublicKeyCredential.parseCreationOptionsFromJSON) {
     console.debug('native pCOFJ')
     createOptions.publicKey = PublicKeyCredential.parseCreationOptionsFromJSON(json.publicKey)
@@ -60,6 +69,7 @@ export const parseCreateOptions = (json: CredentialCreationOptionsJSON): Credent
     // - excludeCrentials at least
     // createOptions = opts
   }
+
   console.debug(createOptions)
   // if (!createOptions.publicKey.extensions) {
   //   createOptions.publicKey.extensions = {}

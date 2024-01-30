@@ -38,7 +38,7 @@ type UserIdOrHandle =
   | { handle: string }
 type OptionalUserIdOrHandle = UserIdOrHandle | undefined
 
-type UserRegistrationInfo = {
+export type UserRegistrationInfo = {
   name: string
   displayName?: string
 } & UserIdOrHandle
@@ -81,7 +81,7 @@ class SDK {
       if (!res.ok) {
         return res
       }
-      const options = parseCreateOptions(res.data)
+      const options = parseCreateOptions(user, res.data)
       console.debug(options)
       const credential = await navigator.credentials.create(options)
       console.debug(credential)
