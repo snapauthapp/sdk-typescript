@@ -7,11 +7,9 @@ export const parseRequestOptions = (json: CredentialRequestOptionsJSON): Credent
   let getOptions: CredentialRequestOptions = {}
   getOptions.mediation = json.mediation
   if (PublicKeyCredential.parseRequestOptionsFromJSON) {
-    console.debug('native ROFJ supported')
     getOptions.publicKey = PublicKeyCredential.parseRequestOptionsFromJSON(json.publicKey)
     // other flags from response?
   } else {
-    console.debug('using manual pROFJ')
     // Manually remap buffersources
     getOptions.publicKey = {
       ...json.publicKey,
@@ -36,10 +34,8 @@ export const parseCreateOptions = (user: UserRegistrationInfo, json: CredentialC
   let createOptions: CredentialCreationOptions = {}
 
   if (PublicKeyCredential.parseCreationOptionsFromJSON) {
-    console.debug('native pCOFJ supported')
     createOptions.publicKey = PublicKeyCredential.parseCreationOptionsFromJSON(json.publicKey)
   } else {
-    console.debug('using fallback pCOFJ')
     createOptions.publicKey = {
       ...json.publicKey,
       challenge: toAB(json.publicKey.challenge),
