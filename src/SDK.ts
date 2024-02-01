@@ -94,7 +94,7 @@ class SDK {
       return response
     } catch (error) {
       // @ts-ignore
-      console.error(error, error.name)
+      console.error(error)
       return {
         ok: false,
         error: 'tbd',
