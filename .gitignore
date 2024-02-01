@@ -5,6 +5,7 @@ node_modules/
 *.tsbuildinfo
 *.js
 *.js.map
+!webpack.config.js
 
 # IDEs
 .vscode/
