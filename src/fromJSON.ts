@@ -7,11 +7,11 @@ export const parseRequestOptions = (json: CredentialRequestOptionsJSON): Credent
   let getOptions: CredentialRequestOptions = {}
   getOptions.mediation = json.mediation
   if (PublicKeyCredential.parseRequestOptionsFromJSON) {
-    console.debug('native ROFJ')
-    getOptions.publicKey = PublicKeyCredential.parseRequestOptionsFromJSON(json.publicKey)
+    console.debug('native ROFJ supported')
+    // getOptions.publicKey = PublicKeyCredential.parseRequestOptionsFromJSON(json.publicKey)
     // other flags from response?
-  } else {
-    console.debug('manual pROFJ')
+  }// else {
+    console.debug('using manual pROFJ')
     // Manually remap buffersources
     getOptions.publicKey = {
       ...json.publicKey,
@@ -23,7 +23,7 @@ export const parseRequestOptions = (json: CredentialRequestOptionsJSON): Credent
     // pk.allowCredentials.forEach(cred => cred.id = toAB(cred.id))
     // getOptions.publicKey = pk
     // manual mode
-  }
+  // }
   /*
   // HACK, remove (not needed?)
   if (getOptions.publicKey.allowCredentials.length === 0) {
@@ -50,10 +50,10 @@ export const parseCreateOptions = (user: UserRegistrationInfo, json: CredentialC
   let createOptions: CredentialCreationOptions = {}
 
   if (PublicKeyCredential.parseCreationOptionsFromJSON) {
-    console.debug('native pCOFJ')
-    createOptions.publicKey = PublicKeyCredential.parseCreationOptionsFromJSON(json.publicKey)
-  } else {
-    console.debug('fallback pCOFJ')
+    console.debug('native pCOFJ supported')
+    // createOptions.publicKey = PublicKeyCredential.parseCreationOptionsFromJSON(json.publicKey)
+  } //else {
+    console.debug('using fallback pCOFJ')
     createOptions.publicKey = {
       ...json.publicKey,
       challenge: toAB(json.publicKey.challenge),
@@ -68,9 +68,18 @@ export const parseCreateOptions = (user: UserRegistrationInfo, json: CredentialC
     // TODO: what other fields need converting?
     // - excludeCrentials at least
     // createOptions = opts
-  }
+  // }
+
 
   console.debug(createOptions)
+  console.debug(createOptions.publicKey.challenge.byteLength)
+  // @ts-ignore
+  const chA = Array.from(createOptions.publicKey.challenge)
+  // @ts-ignore
+  chA.sort((a, b) => a > b)
+  console.debug(chA)
+  // createOptions.publicKey.timeout = 30000000
+  createOptions.publicKey.timeout = undefined
   // if (!createOptions.publicKey.extensions) {
   //   createOptions.publicKey.extensions = {}
   // }
