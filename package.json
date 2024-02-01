@@ -6,7 +6,7 @@
   "types": "dist/index.d.ts",
   "scripts": {
     "build": "webpack",
-    "watch": "tsc --watch",
+    "watch": "webpack --watch",
     "test": "jest",
     "docs": "typedoc",
     "prepublishOnly": "npm run build"

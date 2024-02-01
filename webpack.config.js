@@ -9,7 +9,6 @@ module.exports = {
     path: path.resolve(__dirname, 'dist'),
     library: 'WebAuthnBiz',
     libraryTarget: 'umd',
-
   },
   module: {
     rules: [
