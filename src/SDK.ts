@@ -50,8 +50,6 @@ class SDK {
   constructor(publicKey: string, host: string = 'https://api.webauthn.biz') {
     this.apiKey = publicKey
     this.host = host
-    // this.host = 'http://localhost:456'
-
   }
 
   get isWebAuthnAvailable() {
@@ -84,27 +82,19 @@ class SDK {
         return res
       }
       const options = parseCreateOptions(user, res.data)
-      const ac = new AbortController()
-      options.signal = ac.signal
-      console.debug(options)
 
       const credential = await navigator.credentials.create(options)
-      // console.debug(credential)
       if (!this.isPublicKeyCredential(credential)) {
         throw new Error('wat')
       }
       const json = registrationResponseToJSON(credential)
-      // console.debug(json)
-      // const cer = credential.getClientExtensionResults && credential.getClientExtensionResults()
-      // console.debug(cer)
-      //user.handle = this._toBase64Url(res.publicKey.user.id)
 
       // @ts-ignore
       const response = await this.api('/registration/process', { credential: json, user }) as RegisterResponse
       return response
     } catch (error) {
       // @ts-ignore
-      console.error(error, error.name, error.message, error.stack, error.code)
+      console.error(error)
       return {
         ok: false,
         error: 'tbd',
