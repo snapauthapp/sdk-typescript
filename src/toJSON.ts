@@ -5,11 +5,9 @@ import {
 
 export const registrationResponseToJSON = (credential: PublicKeyCredential): RegistrationResponseJSON => {
   if (credential.toJSON) {
-    console.debug('create() response encoded with native format')
     // There's no discriminator to directly refine this type :(
     return credential.toJSON() as RegistrationResponseJSON
   }
-  console.debug('create() response encoded manually')
   const response = credential.response as AuthenticatorAttestationResponse
   return {
     id: credential.id,
@@ -29,14 +27,10 @@ export const registrationResponseToJSON = (credential: PublicKeyCredential): Reg
  }
 
 export const authenticationResponseToJSON = (credential: PublicKeyCredential): AuthenticationResponseJSON => {
-  console.debug(credential)
   if (credential.toJSON) {
-    console.debug('get() response encoded with native format')
     // There's no discriminator to directly refine this type :(
     return credential.toJSON() as AuthenticationResponseJSON
   }
-  console.debug('get() response encoded manually')
-  // todo: how to cast credential.response to AuthenticatorAssertionResponse?
   const response = credential.response as AuthenticatorAssertionResponse
   return  {
     id: credential.id,
