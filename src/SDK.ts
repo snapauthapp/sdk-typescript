@@ -106,12 +106,10 @@ class SDK {
 
   async handleAutofill(callback: (arg0: AuthResponse) => void) {
     if (!PublicKeyCredential.isConditionalMediationAvailable) {
-      console.debug('CMA feature does not exist')
       return false
     }
     const isCMA = await PublicKeyCredential.isConditionalMediationAvailable()
     if (!isCMA) {
-      console.debug('!CMA')
       return false
     }
 
@@ -132,15 +130,12 @@ class SDK {
 
 
   private async doAuth(options: CredentialRequestOptions, user: UserIdOrHandle|undefined): Promise<AuthResponse> {
-    // console.debug(options)
     try {
       const result = await navigator.credentials.get(options)
       if (!this.isPublicKeyCredential(result)) throw new Error('wat')
-      // console.debug(result)
       return await this.processGetCredential(result, user)
     } catch (error) {
       // welp, problem. ok. what's the error handling story here?
-      console.error(error)
       // NotAllowedError = canceled by user OR webauthn timeout exceeded
       // Safari:
       // error.message = "This request has been cancelled by the user."
@@ -157,7 +152,6 @@ class SDK {
 
   private async processGetCredential(credential: PublicKeyCredential, user: OptionalUserIdOrHandle): Promise<AuthResponse> {
     const json = authenticationResponseToJSON(credential)
-    // console.debug(json)
     // user info of some kind needed for credential lookup when user handle is not present.
     // technically the remote server could look up by credential id, but that's a bad idea.
 
