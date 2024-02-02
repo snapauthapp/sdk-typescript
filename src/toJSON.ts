@@ -29,7 +29,7 @@ export const registrationResponseToJSON = (credential: PublicKeyCredential): Reg
  }
 
 export const authenticationResponseToJSON = (credential: PublicKeyCredential): AuthenticationResponseJSON => {
-  console.debug(credential)
+  // console.debug(credential)
   if (credential.toJSON) {
     console.debug('get() response encoded with native format')
     // There's no discriminator to directly refine this type :(

@@ -136,7 +136,7 @@ class SDK {
     try {
       const result = await navigator.credentials.get(options)
       if (!this.isPublicKeyCredential(result)) throw new Error('wat')
-      console.debug(result)
+      // console.debug(result)
       return await this.processGetCredential(result, user)
     } catch (error) {
       // welp, problem. ok. what's the error handling story here?
