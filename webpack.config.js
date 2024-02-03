@@ -1,6 +1,5 @@
 const path = require('path')
 const { BundleAnalyzerPlugin } = require('webpack-bundle-analyzer')
-const CompressionPlugin = require('compression-webpack-plugin')
 
 module.exports = {
   entry: './src/index.ts',
@@ -20,7 +19,6 @@ module.exports = {
     ],
   },
   plugins: [
-    new CompressionPlugin(),
     new BundleAnalyzerPlugin({
       analyzerMode: 'json',
       generateStatsFile: true,
