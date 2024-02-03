@@ -122,23 +122,17 @@ class SDK {
 
   private async doAuth(options: CredentialRequestOptions, user: UserIdOrHandle|undefined): Promise<AuthResponse> {
     try {
-      const result = await navigator.credentials.get(options)
-      this.mustBePublicKeyCredential(result)
-      return await this.processGetCredential(result, user)
+      const credential = await navigator.credentials.get(options)
+      this.mustBePublicKeyCredential(credential)
+      const json = authenticationResponseToJSON(credential)
+      // @ts-ignore
+      return await this.api('/auth/process', {
+        credential: json,
+        user,
+      })
     } catch (error) {
       return error instanceof Error ? this.convertCredentialsError(error) : this.genericError(error)
     }
-  }
-
-  private async processGetCredential(credential: PublicKeyCredential, user: OptionalUserIdOrHandle): Promise<AuthResponse> {
-    const json = authenticationResponseToJSON(credential)
-    // user info of some kind needed for credential lookup when user handle is not present.
-    // technically the remote server could look up by credential id, but that's a bad idea.
-
-    // @ts-ignore
-    const response = await this.api('/auth/process', { credential: json, user })
-
-    return response
   }
 
   private async api(path: string, body: JsonEncodable): Promise<Result<any, WebAuthnError>> {
