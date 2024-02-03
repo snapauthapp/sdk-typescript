@@ -28,6 +28,7 @@ type WebAuthnError =
   | 'bad_request'
   | 'server_error'
   | 'canceled_by_user'
+  | 'invalid_domain'
   // Other = 'other',
   | 'tbd'
 
@@ -51,6 +52,7 @@ class SDK {
   constructor(publicKey: string, host: string = 'https://api.webauthn.biz') {
     this.apiKey = publicKey
     this.host = host
+    // this.host = 'http://do-not-resolve'
   }
 
   get isWebAuthnAvailable() {
@@ -85,23 +87,14 @@ class SDK {
       const options = parseCreateOptions(user, res.data)
 
       const credential = await navigator.credentials.create(options)
-      if (!this.isPublicKeyCredential(credential)) {
-        throw new Error('wat')
-      }
+      this.mustBePublicKeyCredential(credential)
       const json = registrationResponseToJSON(credential)
 
       // @ts-ignore
       const response = await this.api('/registration/process', { credential: json, user }) as RegisterResponse
       return response
     } catch (error) {
-      // @ts-ignore
-      console.error(error)
-      return {
-        ok: false,
-        error: 'tbd',
-        // @ts-ignore
-        more: [error.name, error.message],
-      }
+      return error instanceof Error ? this.convertCredentialsError(error) : this.genericError(error)
     }
   }
 
@@ -119,35 +112,25 @@ class SDK {
     // const token = await this.startAuth(user)
     // merge w/ startAith?
     const res = await this.api('/auth/createOptions', {}) as Result<CredentialRequestOptionsJSON, WebAuthnError>
+    console.debug(res)
     if (!res.ok) {
       // FIXME: not this?
+      console.debug('cma options fail')
       return
     }
     const options = parseRequestOptions(res.data)
     const response = await this.doAuth(options, undefined)
+    console.debug('cma response', response)
     callback(response)
   }
-
-
 
   private async doAuth(options: CredentialRequestOptions, user: UserIdOrHandle|undefined): Promise<AuthResponse> {
     try {
       const result = await navigator.credentials.get(options)
-      if (!this.isPublicKeyCredential(result)) throw new Error('wat')
+      this.mustBePublicKeyCredential(result)
       return await this.processGetCredential(result, user)
     } catch (error) {
-      // welp, problem. ok. what's the error handling story here?
-      // NotAllowedError = canceled by user OR webauthn timeout exceeded
-      // Safari:
-      // error.message = "This request has been cancelled by the user."
-      // ^ "Operation timed out."
-      // Firefox: "The request is not allowed by the user agent or the platform in the current context, possibly because the user denied permission."
-      return {
-        ok: false,
-        error: 'tbd',
-        // @ts-ignore
-        more: [error.name, error.message],
-      }
+      return error instanceof Error ? this.convertCredentialsError(error) : this.genericError(error)
     }
   }
 
@@ -173,9 +156,8 @@ class SDK {
       body: JSON.stringify(body),
       headers,
       method: 'POST',
-      signal: AbortSignal.timeout(5000),
+      signal: AbortSignal.timeout(5000), // 5 second timeout
     })
-    // TODO: timeouts?
     try {
       const response = await fetch(request)
       if (!response.ok) {
@@ -188,35 +170,50 @@ class SDK {
       const parsed = await response.json()
       return { ok: true, data: parsed.result }
     } catch (error) {
-      // console.error(error)
-      if (!(error instanceof Error)) {
-        return {
-          ok: false,
-          error: 'network_error',
-          more: 'notInstanceOfError'
-        }
-      }
-      // Handle known timeout formats
-      if (error.name === 'AbortError' || error.name === 'TimeoutError') {
-        return {
-          ok: false,
-          error: 'timeout',
-          more: {
-            raw: error,
-          },
-        }
-      }
-      // Fall back to a generic network error. This tends to be stuff like
-      // unresolvable hosts, etc.
-      // error.name, error.message, cause
-      // TypeError, "Failed to fetch", bad destination edge
-      // TypeError, "Load failed", bad destination safar
-      // AbortError, "Fetch is aborted", timeout safari
-      // AbortError, "The user aborted a request", timeout edge
-      // TimeoutError,, "The operation timed out.", timeout FF
+      return error instanceof Error ? this.convertNetworkError(error) : this.genericError(error)
+    }
+  }
+
+  /**
+   * @internal - type refinement tool
+   */
+  private mustBePublicKeyCredential(credential: Credential|null): asserts credential is PublicKeyCredential {
+    if (credential === null) {
+      throw new TypeError('Not a credential')
+    } else if (credential.type !== 'public-key') {
+      throw new TypeError('Unexpected credential type ' + credential.type)
+    }
+    // return credential as PublicKeyCredential
+    // return credential?.type === 'public-key'
+  }
+
+  private genericError<T>(error: unknown): Result<T, WebAuthnError> {
+    return {
+      ok: false,
+      error: 'tbd',
+      // FIXME: be more comprehsive
+    }
+  }
+
+  private convertCredentialsError<T>(error: Error): Result<T, WebAuthnError> {
+    // rpId mismatch (maybe others?)
+    if (error.name === 'SecurityError') {
       return {
         ok: false,
-        error: 'network_error',
+        error: 'invalid_domain',
+        more: { raw: error },
+      }
+    }
+    if (error.name === 'TypeError') {
+    }
+  }
+
+  private convertNetworkError<T>(error: Error): Result<T, WebAuthnError> {
+    // Handle known timeout formats
+    if (error.name === 'AbortError' || error.name === 'TimeoutError') {
+      return {
+        ok: false,
+        error: 'timeout',
         more: {
           raw: error,
           name: error.name,
@@ -224,13 +221,24 @@ class SDK {
         },
       }
     }
-  }
-
-  /**
-   * @internal - type refinement tool
-   */
-  private isPublicKeyCredential(credential: Credential|null): credential is PublicKeyCredential {
-    return credential?.type === 'public-key'
+    console.error(error)
+    // Fall back to a generic network error. This tends to be stuff like
+    // unresolvable hosts, etc.
+    // error.name, error.message, cause
+    // TypeError, "Failed to fetch", bad destination edge
+    // TypeError, "Load failed", bad destination safar
+    // AbortError, "Fetch is aborted", timeout safari
+    // AbortError, "The user aborted a request", timeout edge
+    // TimeoutError,, "The operation timed out.", timeout FF
+    return {
+      ok: false,
+      error: 'network_error',
+      more: {
+        raw: error,
+        name: error.name,
+        message: error.message,
+      },
+    }
   }
 
 }
@@ -238,11 +246,11 @@ class SDK {
 // type DictOf<T> = {[key: string]: T}
 type JsonEncodable =
   | string
-  | number
-  | boolean
-  | null
-  | undefined
-  | { [key: string]: JsonEncodable }
-  | JsonEncodable[]
+| number
+| boolean
+| null
+| undefined
+| { [key: string]: JsonEncodable }
+| JsonEncodable[]
 
 export default SDK
