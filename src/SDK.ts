@@ -31,7 +31,7 @@ type WebAuthnError =
   | 'invalid_domain'
   | 'browser_bug?'
   // Other = 'other',
-  | 'tbd'
+  | 'unexpected'
 
 export type AuthResponse = Result<{ token: string }, WebAuthnError>
 export type RegisterResponse = Result<{ token: string }, WebAuthnError>
@@ -187,11 +187,7 @@ class SDK {
   }
 
   private genericError<T>(error: unknown): Result<T, WebAuthnError> {
-    return {
-      ok: false,
-      error: 'tbd',
-      // FIXME: be more comprehsive
-    }
+    return { ok: false, error: 'unexpected', more: error }
   }
 
   private convertCredentialsError<T>(error: Error): Result<T, WebAuthnError> {
@@ -208,8 +204,8 @@ class SDK {
     if (error.name === 'TypeError') {
       return formatError('browser_bug?', error)
     }
-    console.error('Unhandled error type', error)
-    return formatError('tbd', error)
+    console.error('Unhandled error type converting credentials', error)
+    return formatError('unexpected', error)
   }
 
   private convertNetworkError<T>(error: Error): Result<T, WebAuthnError> {
@@ -219,7 +215,7 @@ class SDK {
     }
     // Fall back to a generic network error. This tends to be stuff like
     // unresolvable hosts, etc. Log this one as it's pretty weird.
-    console.error(error)
+    console.error('Non-timeout network error', error)
     return formatError('network_error', error)
   }
 
@@ -238,11 +234,11 @@ const formatError = <T>(error: WebAuthnError, obj: Error): Result<T, WebAuthnErr
 // type DictOf<T> = {[key: string]: T}
 type JsonEncodable =
   | string
-| number
-| boolean
-| null
-| undefined
-| { [key: string]: JsonEncodable }
-| JsonEncodable[]
+  | number
+  | boolean
+  | null
+  | undefined
+  | { [key: string]: JsonEncodable }
+  | JsonEncodable[]
 
 export default SDK
