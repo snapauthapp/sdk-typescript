@@ -25,6 +25,9 @@
   ],
   "jest": {
     "collectCoverage": true,
+    "collectCoverageFrom": [
+      "src/**"
+    ],
     "coverageReporters": [
       "cobertura",
       "html",
