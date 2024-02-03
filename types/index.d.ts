@@ -104,13 +104,13 @@ declare global {
 
 }
 
-enum NativeSupportResult {
+export const enum NativeSupportResult {
   NotSupported,
   MatchedManual,
   MismatchedManual,
 }
 
-type TracksNativeSupport<T> = {
+export type TracksNativeSupport<T> = {
   result: T
   native: NativeSupportResult
 }

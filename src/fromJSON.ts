@@ -2,8 +2,9 @@ import {
   base64URLToArrayBuffer as toAB,
 } from './utils'
 import { UserRegistrationInfo } from './SDK'
+import { NativeSupportResult, TracksNativeSupport } from '../types'
 
-export const parseRequestOptions = (json: CredentialRequestOptionsJSON): CredentialRequestOptions => {
+export const parseRequestOptions = (json: CredentialRequestOptionsJSON): TracksNativeSupport<CredentialRequestOptions> => {
   let getOptions: CredentialRequestOptions = {}
   getOptions.mediation = json.mediation
   if (PublicKeyCredential.parseRequestOptionsFromJSON) {
@@ -19,10 +20,10 @@ export const parseRequestOptions = (json: CredentialRequestOptionsJSON): Credent
     let pk = json.publicKey
   }
   // add abort signal?
-  return getOptions
+  return { result: getOptions, native: NativeSupportResult.NotSupported }
 }
 
-export const parseCreateOptions = (user: UserRegistrationInfo, json: CredentialCreationOptionsJSON): CredentialCreationOptions => {
+export const parseCreateOptions = (user: UserRegistrationInfo, json: CredentialCreationOptionsJSON): TracksNativeSupport<CredentialCreationOptions> => {
   // Locally merge in user.name and displayName - they are never sent out and
   // not part of the server response.
   json.publicKey.user = {
@@ -48,7 +49,7 @@ export const parseCreateOptions = (user: UserRegistrationInfo, json: CredentialC
   }
 
   // TODO: abortSignal?
-  return createOptions
+  return { result: createOptions, native: NativeSupportResult.NotSupported }
 }
 
 const parseDescriptor = (json: PublicKeyCredentialDescriptorJSON): PublicKeyCredentialDescriptor => ({

@@ -69,7 +69,7 @@ class SDK {
       return res
     }
     const options = parseRequestOptions(res.data)
-    return await this.doAuth(options, user)
+    return await this.doAuth(options.result, user)
   }
 
   async startRegister(user: UserRegistrationInfo): Promise<RegisterResponse> {
@@ -83,7 +83,7 @@ class SDK {
       }
       const options = parseCreateOptions(user, res.data)
 
-      const credential = await navigator.credentials.create(options)
+      const credential = await navigator.credentials.create(options.result)
       if (!this.isPublicKeyCredential(credential)) {
         throw new Error('wat')
       }
@@ -123,7 +123,7 @@ class SDK {
       return
     }
     const options = parseRequestOptions(res.data)
-    const response = await this.doAuth(options, undefined)
+    const response = await this.doAuth(options.result, undefined)
     callback(response)
   }
 
