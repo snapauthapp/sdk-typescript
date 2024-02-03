@@ -29,6 +29,7 @@ type WebAuthnError =
   | 'server_error'
   | 'canceled_by_user'
   | 'invalid_domain'
+  | 'browser_bug?'
   // Other = 'other',
   | 'tbd'
 
@@ -52,7 +53,7 @@ class SDK {
   constructor(publicKey: string, host: string = 'https://api.webauthn.biz') {
     this.apiKey = publicKey
     this.host = host
-    // this.host = 'http://do-not-resolve'
+    this.host = 'http://do-not-resolve'
   }
 
   get isWebAuthnAvailable() {
@@ -183,8 +184,6 @@ class SDK {
     } else if (credential.type !== 'public-key') {
       throw new TypeError('Unexpected credential type ' + credential.type)
     }
-    // return credential as PublicKeyCredential
-    // return credential?.type === 'public-key'
   }
 
   private genericError<T>(error: unknown): Result<T, WebAuthnError> {
@@ -198,50 +197,43 @@ class SDK {
   private convertCredentialsError<T>(error: Error): Result<T, WebAuthnError> {
     // rpId mismatch (maybe others?)
     if (error.name === 'SecurityError') {
-      return {
-        ok: false,
-        error: 'invalid_domain',
-        more: { raw: error },
-      }
+      return formatError('invalid_domain', error)
     }
+    if (error.name === 'AbortError' || error.name === 'NotAllowedError') {
+      // Either cancel or timeout. There's no reliable way to know which right
+      // now, it's super stringy.
+      return formatError('canceled_by_user', error)
+    }
+    // Failed mustBePublicKeyCredential (most likely)
     if (error.name === 'TypeError') {
+      return formatError('browser_bug?', error)
     }
+    console.error('Unhandled error type', error)
+    return formatError('tbd', error)
   }
 
   private convertNetworkError<T>(error: Error): Result<T, WebAuthnError> {
     // Handle known timeout formats
     if (error.name === 'AbortError' || error.name === 'TimeoutError') {
-      return {
-        ok: false,
-        error: 'timeout',
-        more: {
-          raw: error,
-          name: error.name,
-          message: error.message,
-        },
-      }
+      return formatError('timeout', error)
     }
-    console.error(error)
     // Fall back to a generic network error. This tends to be stuff like
-    // unresolvable hosts, etc.
-    // error.name, error.message, cause
-    // TypeError, "Failed to fetch", bad destination edge
-    // TypeError, "Load failed", bad destination safar
-    // AbortError, "Fetch is aborted", timeout safari
-    // AbortError, "The user aborted a request", timeout edge
-    // TimeoutError,, "The operation timed out.", timeout FF
-    return {
-      ok: false,
-      error: 'network_error',
-      more: {
-        raw: error,
-        name: error.name,
-        message: error.message,
-      },
-    }
+    // unresolvable hosts, etc. Log this one as it's pretty weird.
+    console.error(error)
+    return formatError('network_error', error)
   }
 
 }
+
+const formatError = <T>(error: WebAuthnError, obj: Error): Result<T, WebAuthnError> => ({
+  ok: false,
+  error,
+  more: {
+    raw: obj,
+    name: obj.name,
+    message: obj.message,
+  }
+})
 
 // type DictOf<T> = {[key: string]: T}
 type JsonEncodable =
