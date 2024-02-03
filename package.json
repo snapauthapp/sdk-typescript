@@ -24,6 +24,12 @@
     "dist"
   ],
   "jest": {
+    "collectCoverage": true,
+    "coverageReporters": [
+      "cobertura",
+      "html",
+      "text"
+    ],
     "preset": "ts-jest",
     "testEnvironment": "node"
   },

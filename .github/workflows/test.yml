@@ -7,8 +7,34 @@ on:
       - main
 
 jobs:
+  jest:
+    name: Jest
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run tsc
+        run: npm run test
+
+      - name: Upload code coverage
+        uses: codecov/codecov-action@v3
+        if: always()
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+
+
   tsc:
-    name: Run tsc
+    name: TSC
     runs-on: ubuntu-latest
     steps:
       - name: Check out code
