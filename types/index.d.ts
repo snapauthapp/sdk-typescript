@@ -105,9 +105,9 @@ declare global {
 }
 
 export const enum NativeSupportResult {
-  NotSupported,
-  MatchedManual,
-  MismatchedManual,
+  NotSupported = 'no',
+  MatchedManual = 'ok',
+  MismatchedManual = 'err',
 }
 
 export type TracksNativeSupport<T> = {

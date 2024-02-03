@@ -90,7 +90,11 @@ class SDK {
       const json = registrationResponseToJSON(credential)
 
       // @ts-ignore
-      const response = await this.api('/registration/process', { credential: json, user }) as RegisterResponse
+      const response = await this.api('/registration/process', {
+        credential: json.result,
+        user,
+        // native: json.native,
+      }) as RegisterResponse
       return response
     } catch (error) {
       // @ts-ignore
@@ -156,7 +160,11 @@ class SDK {
     // technically the remote server could look up by credential id, but that's a bad idea.
 
     // @ts-ignore
-    const response = await this.api('/auth/process', { credential: json, user })
+    const response = await this.api('/auth/process', {
+      credential: json.result,
+      user,
+      // native: json.native,
+    })
 
     return response
   }
