@@ -10,7 +10,7 @@ export const registrationResponseToJSON = (credential: PublicKeyCredential): Tra
     return credential.toJSON() as RegistrationResponseJSON
   }
   const response = credential.response as AuthenticatorAttestationResponse
-  return {
+  const manualEncoding = {
     id: credential.id,
     rawId: toB64(credential.rawId),
     type: credential.type,
@@ -25,6 +25,8 @@ export const registrationResponseToJSON = (credential: PublicKeyCredential): Tra
     authenticatorAttachment: credential.authenticatorAttachment as AuthenticatorAttachment ?? undefined,
     clientExtensionResults: credential.getClientExtensionResults(), // ??
   }
+
+  return { result: manualEncoding, native: NativeSupportResult.NotSupported }
  }
 
 export const authenticationResponseToJSON = (credential: PublicKeyCredential): TracksNativeSupport<AuthenticationResponseJSON> => {
@@ -33,7 +35,7 @@ export const authenticationResponseToJSON = (credential: PublicKeyCredential): T
     return credential.toJSON() as AuthenticationResponseJSON
   }
   const response = credential.response as AuthenticatorAssertionResponse
-  return  {
+  const manualEncoding = {
     id: credential.id,
     rawId: toB64(credential.rawId),
     type: credential.type,
@@ -46,4 +48,5 @@ export const authenticationResponseToJSON = (credential: PublicKeyCredential): T
     },
     clientExtensionResults: credential.getClientExtensionResults(),
   }
+  return { result: manualEncoding, native: NativeSupportResult.NotSupported }
 }
