@@ -6,7 +6,7 @@ import { UserRegistrationInfo } from './SDK'
 export const parseRequestOptions = (json: CredentialRequestOptionsJSON): CredentialRequestOptions => {
   let getOptions: CredentialRequestOptions = {}
   getOptions.mediation = json.mediation
-  // TODO: restore parseRequestOptionsFromJSON (see #xxx)
+  // TODO: restore parseRequestOptionsFromJSON (see #16+#17)
   // Manually remap buffersources
   getOptions.publicKey = {
     ...json.publicKey,
@@ -29,7 +29,7 @@ export const parseCreateOptions = (user: UserRegistrationInfo, json: CredentialC
 
   let createOptions: CredentialCreationOptions = {}
 
-  // TODO: restore parseCreationOptionsFromJSON (see #xxx)
+  // TODO: restore parseCreationOptionsFromJSON (see #16+#17)
   createOptions.publicKey = {
     ...json.publicKey,
     challenge: toAB(json.publicKey.challenge),

@@ -4,7 +4,7 @@ import {
 } from './utils'
 
 export const registrationResponseToJSON = (credential: PublicKeyCredential): RegistrationResponseJSON => {
-  // TODO: if credential.toJSON exists, prefer it?
+  // TODO: restore credential.toJSON if it exists (see #16+#17)
   const response = credential.response as AuthenticatorAttestationResponse
   return {
     id: credential.id,
@@ -24,7 +24,7 @@ export const registrationResponseToJSON = (credential: PublicKeyCredential): Reg
  }
 
 export const authenticationResponseToJSON = (credential: PublicKeyCredential): AuthenticationResponseJSON => {
-  // TODO: if credential.toJSON exists, prefer it?
+  // TODO: restore credential.toJSON if it exists (see #16+#17)
   const response = credential.response as AuthenticatorAssertionResponse
   return {
     id: credential.id,
