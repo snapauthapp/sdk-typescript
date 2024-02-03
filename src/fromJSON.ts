@@ -7,18 +7,14 @@ import { NativeSupportResult, TracksNativeSupport } from '../types'
 export const parseRequestOptions = (json: CredentialRequestOptionsJSON): TracksNativeSupport<CredentialRequestOptions> => {
   let getOptions: CredentialRequestOptions = {}
   getOptions.mediation = json.mediation
-  if (PublicKeyCredential.parseRequestOptionsFromJSON) {
-    getOptions.publicKey = PublicKeyCredential.parseRequestOptionsFromJSON(json.publicKey)
-    // other flags from response?
-  } else {
-    // Manually remap buffersources
-    getOptions.publicKey = {
-      ...json.publicKey,
-      allowCredentials: json.publicKey.allowCredentials?.map(parseDescriptor),
-      challenge: toAB(json.publicKey.challenge),
-    }
-    let pk = json.publicKey
+  // TODO: restore parseRequestOptionsFromJSON (see #16+#17)
+  // Manually remap buffersources
+  getOptions.publicKey = {
+    ...json.publicKey,
+    allowCredentials: json.publicKey.allowCredentials?.map(parseDescriptor),
+    challenge: toAB(json.publicKey.challenge),
   }
+  let pk = json.publicKey
   // add abort signal?
   return { result: getOptions, native: NativeSupportResult.NotSupported }
 }
@@ -34,17 +30,14 @@ export const parseCreateOptions = (user: UserRegistrationInfo, json: CredentialC
 
   let createOptions: CredentialCreationOptions = {}
 
-  if (PublicKeyCredential.parseCreationOptionsFromJSON) {
-    createOptions.publicKey = PublicKeyCredential.parseCreationOptionsFromJSON(json.publicKey)
-  } else {
-    createOptions.publicKey = {
-      ...json.publicKey,
-      challenge: toAB(json.publicKey.challenge),
-      excludeCredentials: json.publicKey.excludeCredentials?.map(parseDescriptor),
-      user: {
-        ...json.publicKey.user,
-        id: toAB(json.publicKey.user.id),
-      }
+  // TODO: restore parseCreationOptionsFromJSON (see #16+#17)
+  createOptions.publicKey = {
+    ...json.publicKey,
+    challenge: toAB(json.publicKey.challenge),
+    excludeCredentials: json.publicKey.excludeCredentials?.map(parseDescriptor),
+    user: {
+      ...json.publicKey.user,
+      id: toAB(json.publicKey.user.id),
     }
   }
 
