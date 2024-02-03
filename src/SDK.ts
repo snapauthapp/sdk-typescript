@@ -108,21 +108,16 @@ class SDK {
       return false
     }
 
-    // available, let's gooo
-    // try/catch?
-    // const token = await this.startAuth(user)
-    // merge w/ startAith?
+    // TODO: warn if no <input autocomplete="webauthn"> is found?
+
+    // Autofill API is available. Make the calls and set it up.
     const res = await this.api('/auth/createOptions', {}) as Result<CredentialRequestOptionsJSON, WebAuthnError>
-    console.debug(res)
     if (!res.ok) {
-      // FIXME: not this?
-      console.debug('cma options fail')
+      // This results in a silent failure. Intetional but subject to change.
       return
     }
     const options = parseRequestOptions(res.data)
-    const response = await this.doAuth(options, undefined)
-    console.debug('cma response', response)
-    callback(response)
+    callback(await this.doAuth(options, undefined))
   }
 
   private async doAuth(options: CredentialRequestOptions, user: UserIdOrHandle|undefined): Promise<AuthResponse> {
