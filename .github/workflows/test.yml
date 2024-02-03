@@ -28,7 +28,7 @@ jobs:
 
       - name: Get sizes
         id: size
-        run: |
+        run: >-
           echo -n 'data=' &&
           cat dist/report.json | jq '.[0] | { size: .parsedSize, gz: .gzipSize, label: .label }' >> $GITHUB_OUTPUT
 
