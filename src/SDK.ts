@@ -23,7 +23,8 @@ type Result<T, E> =
   | { ok: false, error: E, more?: unknown }
 
 type WebAuthnError =
-  | 'network_failed' // timeouts?
+  | 'timeout'
+  | 'network_error'
   | 'bad_request'
   | 'server_error'
   | 'canceled_by_user'
@@ -187,6 +188,26 @@ class SDK {
       const parsed = await response.json()
       return { ok: true, data: parsed.result }
     } catch (error) {
+      // console.error(error)
+      if (!(error instanceof Error)) {
+        return {
+          ok: false,
+          error: 'network_error',
+          more: 'notInstanceOfError'
+        }
+      }
+      // Handle known timeout formats
+      if (error.name === 'AbortError' || error.name === 'TimeoutError') {
+        return {
+          ok: false,
+          error: 'timeout',
+          more: {
+            raw: error,
+          },
+        }
+      }
+      // Fall back to a generic network error. This tends to be stuff like
+      // unresolvable hosts, etc.
       // error.name, error.message, cause
       // TypeError, "Failed to fetch", bad destination edge
       // TypeError, "Load failed", bad destination safar
@@ -195,14 +216,11 @@ class SDK {
       // TimeoutError,, "The operation timed out.", timeout FF
       return {
         ok: false,
-        error: 'network_failed',
+        error: 'network_error',
         more: {
-        // @ts-ignore
+          raw: error,
           name: error.name,
-        // @ts-ignore
           message: error.message,
-          te: error instanceof TypeError,
-          ue: error instanceof URIError,
         },
       }
     }
