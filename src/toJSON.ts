@@ -1,14 +1,11 @@
 import { NativeSupportResult, TracksNativeSupport } from '../types'
 import {
+  areObjectPropertiesEqual as cmp,
   base64URLToArrayBuffer as toAB,
   arrayBufferToBase64URL as toB64,
 } from './utils'
 
 export const registrationResponseToJSON = (credential: PublicKeyCredential): TracksNativeSupport<RegistrationResponseJSON> => {
-  if (credential.toJSON) {
-    // There's no discriminator to directly refine this type :(
-    return credential.toJSON() as RegistrationResponseJSON
-  }
   const response = credential.response as AuthenticatorAttestationResponse
   const manualEncoding = {
     id: credential.id,
@@ -26,16 +23,20 @@ export const registrationResponseToJSON = (credential: PublicKeyCredential): Tra
     clientExtensionResults: credential.getClientExtensionResults(), // ??
   }
 
-  return { result: manualEncoding, native: NativeSupportResult.NotSupported }
+  let native: NativeSupportResult = NativeSupportResult.NotSupported
+  if (credential.toJSON) {
+    const nativeResult = credential.toJSON()
+    console.debug(nativeResult, manualEncoding, nativeResult == manualEncoding)
+    // TODO: compare and update native
+    native = NativeSupportResult.MismatchedManual
+  }
+  return { result: manualEncoding, native }
  }
 
 export const authenticationResponseToJSON = (credential: PublicKeyCredential): TracksNativeSupport<AuthenticationResponseJSON> => {
-  if (credential.toJSON) {
-    // There's no discriminator to directly refine this type :(
-    return credential.toJSON() as AuthenticationResponseJSON
-  }
   const response = credential.response as AuthenticatorAssertionResponse
-  const manualEncoding = {
+  console.debug(credential.response)
+  const manualEncoding: AuthenticationResponseJSON = {
     id: credential.id,
     rawId: toB64(credential.rawId),
     type: credential.type,
@@ -44,9 +45,19 @@ export const authenticationResponseToJSON = (credential: PublicKeyCredential): T
       clientDataJSON: toB64(response.clientDataJSON),
       signature: toB64(response.signature),
       userHandle: toB64(response.userHandle) ?? undefined,
-      attestationObject: toB64(response.attestationObject) ?? undefined,
+      // attestationObject: toB64(response.attestationObject) ?? undefined,
     },
     clientExtensionResults: credential.getClientExtensionResults(),
   }
-  return { result: manualEncoding, native: NativeSupportResult.NotSupported }
+  if (response.attestationObject) {
+    manualEncoding.response.attestationObject = toB64(response.attestationObject)
+  }
+  let native: NativeSupportResult = NativeSupportResult.NotSupported
+  if (credential.toJSON) {
+    const nativeResult = credential.toJSON()
+    // TODO: compare and update native
+    // console.debug(nativeResult, manualEncoding, cmp(manualEncoding, nativeResult))
+    native = cmp(manualEncoding, nativeResult) ? NativeSupportResult.MatchedManual : NativeSupportResult.MismatchedManual
+  }
+  return { result: manualEncoding, native }
 }

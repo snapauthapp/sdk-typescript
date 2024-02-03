@@ -35,14 +35,17 @@ export const areObjectPropertiesEqual = (expected: Record<string, any>, actual: 
 
   for (const key of expectedKeys) {
     if (!(key in actual)) {
+      console.debug('missing key', key)
       return false
     }
 
     if (typeof expected[key] === 'object' && typeof actual[key] === 'object') {
       if (!areObjectPropertiesEqual(expected[key], actual[key])) {
+        console.debug('recusive wrong', key)
         return false
       }
     } else if (expected[key] !== actual[key]) {
+      console.debug('value wrong', key)
       return false
     }
   }

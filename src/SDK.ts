@@ -1,6 +1,6 @@
 import {
-  base64URLToArrayBuffer,
   arrayBufferToBase64URL,
+  base64URLToArrayBuffer,
 } from './utils'
 
 import {
@@ -69,6 +69,7 @@ class SDK {
       return res
     }
     const options = parseRequestOptions(res.data)
+    console.debug(options)
     return await this.doAuth(options.result, user)
   }
 
@@ -127,6 +128,7 @@ class SDK {
       return
     }
     const options = parseRequestOptions(res.data)
+    console.debug(options)
     const response = await this.doAuth(options.result, undefined)
     callback(response)
   }
