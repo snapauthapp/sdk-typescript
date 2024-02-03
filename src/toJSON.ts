@@ -4,10 +4,7 @@ import {
 } from './utils'
 
 export const registrationResponseToJSON = (credential: PublicKeyCredential): RegistrationResponseJSON => {
-  if (credential.toJSON) {
-    // There's no discriminator to directly refine this type :(
-    return credential.toJSON() as RegistrationResponseJSON
-  }
+  // TODO: restore credential.toJSON if it exists (see #16+#17)
   const response = credential.response as AuthenticatorAttestationResponse
   return {
     id: credential.id,
@@ -27,12 +24,9 @@ export const registrationResponseToJSON = (credential: PublicKeyCredential): Reg
  }
 
 export const authenticationResponseToJSON = (credential: PublicKeyCredential): AuthenticationResponseJSON => {
-  if (credential.toJSON) {
-    // There's no discriminator to directly refine this type :(
-    return credential.toJSON() as AuthenticationResponseJSON
-  }
+  // TODO: restore credential.toJSON if it exists (see #16+#17)
   const response = credential.response as AuthenticatorAssertionResponse
-  return  {
+  return {
     id: credential.id,
     rawId: toB64(credential.rawId),
     type: credential.type,
