@@ -1,9 +1,10 @@
+import { NativeSupportResult, TracksNativeSupport } from '../types'
 import {
   base64URLToArrayBuffer as toAB,
   arrayBufferToBase64URL as toB64,
 } from './utils'
 
-export const registrationResponseToJSON = (credential: PublicKeyCredential): RegistrationResponseJSON => {
+export const registrationResponseToJSON = (credential: PublicKeyCredential): TracksNativeSupport<RegistrationResponseJSON> => {
   if (credential.toJSON) {
     // There's no discriminator to directly refine this type :(
     return credential.toJSON() as RegistrationResponseJSON
@@ -26,7 +27,7 @@ export const registrationResponseToJSON = (credential: PublicKeyCredential): Reg
   }
  }
 
-export const authenticationResponseToJSON = (credential: PublicKeyCredential): AuthenticationResponseJSON => {
+export const authenticationResponseToJSON = (credential: PublicKeyCredential): TracksNativeSupport<AuthenticationResponseJSON> => {
   if (credential.toJSON) {
     // There's no discriminator to directly refine this type :(
     return credential.toJSON() as AuthenticationResponseJSON
