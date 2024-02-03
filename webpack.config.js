@@ -1,4 +1,5 @@
 const path = require('path')
+const { BundleAnalyzerPlugin } = require('webpack-bundle-analyzer')
 
 module.exports = {
   entry: './src/index.ts',
@@ -17,6 +18,12 @@ module.exports = {
       },
     ],
   },
+  plugins: [
+    new BundleAnalyzerPlugin({
+      analyzerMode: 'json',
+      generateStatsFile: true,
+    }),
+  ],
   resolve: {
     extensions: ['.ts'],
   },

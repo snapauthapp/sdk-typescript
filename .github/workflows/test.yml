@@ -25,3 +25,23 @@ jobs:
 
       - name: Run tsc
         run: npm run build
+
+      # - name: Get sizes
+      #   id: size
+      #   run: >-
+      #     echo -n 'data=' &&
+      #     cat dist/report.json | jq '.[0] | { size: .parsedSize, gz: .gzipSize, label: .label }' >> $GITHUB_OUTPUT
+
+      # - name: Comment size
+      #   if: github.event_name == 'pull_request'
+      #   uses: peter-evans/create-or-update-comment@v4
+      #   with:
+      #     issue-number: ${{ github.event.pull_request.number }}
+      #     body: |
+      #       Package size:
+      #       ${{ steps.size.outputs.data }}
+      - name: Summarize sizes
+        run: |
+          echo -n "File: " && cat dist/report.json | jq '.[0].label' >> $GITHUB_STEP_SUMMARY
+          echo -n "Size: " && cat dist/report.json | jq '.[0].parsedSize' >> $GITHUB_STEP_SUMMARY
+          echo -n "Gzip: " && cat dist/report.json | jq '.[0].gzipSize' >> $GITHUB_STEP_SUMMARY
