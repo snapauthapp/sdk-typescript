@@ -22,3 +22,30 @@ export const arrayBufferToBase64URL = <T extends ArrayBuffer|null>(buffer: T): T
   // same
   return b64.replaceAll('+', '-').replaceAll('/', '_').replaceAll('=', '') as any
 }
+
+/**
+ * Actual must match all properties of expected, recursively.
+ */
+export const areObjectPropertiesEqual = (expected: Record<string, any>, actual: any): boolean => {
+  if (typeof expected !== 'object' || typeof actual !== 'object') {
+    return false
+  }
+
+  const expectedKeys = Object.keys(expected)
+
+  for (const key of expectedKeys) {
+    if (!(key in actual)) {
+      return false
+    }
+
+    if (typeof expected[key] === 'object' && typeof actual[key] === 'object') {
+      if (!areObjectPropertiesEqual(expected[key], actual[key])) {
+        return false
+      }
+    } else if (expected[key] !== actual[key]) {
+      return false
+    }
+  }
+
+  return true
+}
