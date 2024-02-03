@@ -104,6 +104,16 @@ declare global {
 
 }
 
+enum NativeSupportResult {
+  NotSupported,
+  MatchedManual,
+  MismatchedManual,
+}
+
+type TracksNativeSupport<T> = {
+  result: T
+  native: NativeSupportResult
+}
 
 export type Base64URLString = string
 
