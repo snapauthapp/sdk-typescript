@@ -16,8 +16,6 @@ import {
 /**
  * API formats
  */
-// success:true, token: string
-// success:false, error: info?
 type Result<T, E> =
   | { ok: true, data: T }
   | { ok: false, error: E, more?: unknown }
@@ -30,7 +28,6 @@ type WebAuthnError =
   | 'canceled_by_user'
   | 'invalid_domain'
   | 'browser_bug?'
-  // Other = 'other',
   | 'unexpected'
 
 export type AuthResponse = Result<{ token: string }, WebAuthnError>
@@ -53,7 +50,6 @@ class SDK {
   constructor(publicKey: string, host: string = 'https://api.webauthn.biz') {
     this.apiKey = publicKey
     this.host = host
-    this.host = 'http://do-not-resolve'
   }
 
   get isWebAuthnAvailable() {
