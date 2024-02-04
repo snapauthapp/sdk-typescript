@@ -55,10 +55,14 @@ if (registration.ok) {
 > It is used completelly locally, and not even sent to SnapAuth's servers.
 > This is commonly something like a human name, email address, or login handle.
 >
+> You MAY also set `displayName`.
+> If not provided, we default it to the `name` value.
+> Browsers typically (counter-intuitively) ignore `displayName` in favor of `name`.
+>
 > This is reflected in the TypeScript formats.
 
 > [!WARNING]
-> The name field cannot be changed at this time - it's not supported by browers.
+> The `name` field cannot be changed at this time - it's not supported by browers.
 
 
 ### Authenticating
