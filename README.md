@@ -46,8 +46,9 @@ if (registration.ok) {
 > [!NOTE]
 > Registration requires you to provide either:
 >
->     `id`: A stable user identifier (e.g. primary key), or
->     `handle`: A possibly-unstable identifier - what the user would type to sign in
+>   `id`: A stable user identifier (e.g. primary key), or
+>
+>   `handle`: A possibly-unstable identifier - what the user would type to sign in
 >
 > You may provide both now, and MUST provide both in the backend `attach` API call.
 >
