@@ -29,6 +29,11 @@ const snapAuth = new SnapAuth.SDK('pubkey_your_value')
 All examples are in TypeScript.
 For use with vanilla JavaScript, omit the type imports and annotations.
 
+> [!IMPORTANT]
+> Both registration and authentication MUST be called in response to a user gesture.
+> Browsers will block the attempt otherwise.
+> This includes `onClick`, `onSubmit`, etc.
+
 ### Registering a Credential
 ```typescript
 // Type imports are optional, and only apply to TypeScript
@@ -73,14 +78,9 @@ if (registration.ok) {
 ### Authenticating
 
 ```typescript
-// Type imports are optional, and only apply to TypeScript
-import { UserAuthenticationInfo } from '@snapauth/sdk'
 // This would typically be in an onClick/onSubmit handler
-const authInfo: UserAuthenticationInfo = {
-  id: 'your_user_id',
-  // or handle, as set up during register
-}
-const auth = await snapAuth.startAuth(authInfo)
+const handle = document.getElementById('username').value // Adjust to your UI
+const auth = await snapAuth.startAuth({ handle })
 if (auth.ok) {
   const token = auth.data.token
   // Send token to your backend to use the /auth/verify API
@@ -92,19 +92,21 @@ if (auth.ok) {
 ```
 
 > [!TIP]
-> You can call the `startAuth` API without any roundtrips to your service by using `handle` instead of `id`.
-> This matches the value configured during registration.
+> You may use `id` or `handle` when calling `startAuth()`.
+> Using `id` will typically require a roundtrip to your service, but tends to be necessary if you normalize handles.
+> Both values are **case-insensitive**.
 
 > [!CAUTION]
 > Do not sign in the user based on getting the client token alone!
 > You MUST send it to the `/auth/verify` endpoint, and inspect its response to get the _verified_ user id to securely authenticate.
 
-#### Authenticating with AutoFill
+#### AutoFill-assisted requests
 
 Most browsers support credential autofill, which will automatically prompt a user to sign in using a previous-registered credential.
 To take advantage of this, you need two things:
 
-1) An `<input>` (or `<textarea>`) field with `autocomplete="username webauthn"` set. We strongly recommend adding these details to your standard sign-in field:
+1) An `<input>` (or `<textarea>`) field with `autocomplete="username webauthn"` set[^1].
+   We strongly recommend adding these details to your standard sign-in field:
 ```html
 <input type="text" autocomplete="username webauthn" placeholder="Username" />
 ```
@@ -120,17 +122,29 @@ const onSignIn = (auth: AuthResponse) => {
 snapAuth.handleAutofill(onSignIn)
 ```
 
-> [!TIP]
-> If using both manual and autofill-assisted sign in, we suggest reusing the `handleAutofill` callback in the traditional flow:
-> ```typescript
-> // continuing from above
-> const auth = await snapAuth.startAuth({ handle })
-> onSignIn(auth)
-> ```
+> [!IMPORTANT]
+> Never rely on the autofill experience alone.
+> Always treat it as progressive enhancement to the standard flow.
 
-> [!NOTE]
-> We only call the `handleAutofill` callback on success.
-> You do not need special handling in the callback for failing; but, like above, you MUST present the token for verification and not trust client data.
+> [!TIP]
+> Re-use the `handleAutofill` callback in the traditional flow to create a consistent experience:
+```typescript
+const onSignIn = async (auth: AuthResponse) => {
+  if (auth.ok) {
+    await fetch(...) // send auth.data.token
+  }
+}
+const onSignInSubmit = async (e) => {
+  // ...
+  const auth = await snapAuth.startAuth({ handle })
+  await onSignIn(auth)
+}
+sdk.handleAutofill(onSignIn)
+```
+
+> [!TIP]
+> Unlike the direct startRegister and startAuth calls, handleAutofill CAN and SHOULD be called as early in the page lifecycle is possible.
+> This helps ensure that autofill can occur when a user interacts with the form field.
 
 ## Building the SDK
 
@@ -141,3 +155,6 @@ To make the local version available for linking, run `npm link` in this director
 In the project that should _use_ the local version, run `npm link '@snapauth/sdk'` which will set up the symlinking.
 
 If working with a non-production backend, provide the host as a string to the second parameter of the SDK constructor.
+
+[^1]: The WebAuthn spec says that only `webauthn` is required in `autocomplete`, but real-world browser testing shows that using exactly `autocomplete="username webauthn"` string is most reliable.
+If you do not have this element, or the browser otherwise fails to detect it, the autofill-assited experience will not start.
