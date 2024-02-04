@@ -70,6 +70,11 @@ if (registration.ok) {
 >
 > This is reflected in the TypeScript formats.
 
+> [!CAUTION]
+> You MUST send the token to the backend `/registration/attach` API to associate it with the user.
+> Failure to do so will prevent the user from signing in the credential they just created.
+> The response also includes a `expiresAt` field containing a Unix timestamp indicating by when the token must be attached.
+
 > [!WARNING]
 > The `name` field cannot be changed at this time - it's not supported by browers.
 > Once browser APIs exist to modify it, we will add support to the SDK.
@@ -97,7 +102,7 @@ if (auth.ok) {
 > Both values are **case-insensitive**.
 
 > [!CAUTION]
-> Do not sign in the user based on getting the client token alone!
+> DO NOT sign in the user based on getting the client token alone!
 > You MUST send it to the `/auth/verify` endpoint, and inspect its response to get the _verified_ user id to securely authenticate.
 
 #### AutoFill-assisted requests
