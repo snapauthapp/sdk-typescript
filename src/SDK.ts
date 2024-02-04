@@ -125,7 +125,12 @@ class SDK {
     }
     const options = parseRequestOptions(res.data)
     const response = await this.doAuth(options, undefined)
-    callback(response)
+    if (response.ok) {
+      callback(response)
+    } else {
+      // User aborted conditional mediation (UI doesn't even exist in all
+      // browsers). Do not run the callback.
+    }
   }
 
 

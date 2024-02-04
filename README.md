@@ -34,7 +34,7 @@ const registerInfo: UserRegistrationInfo = {
   name: 'any_user_visible_string',
   id: 'your_user_id', // and/or handle
 }
-const registration = snapAuth.startRegister(registerInfo)
+const registration = await snapAuth.startRegister(registerInfo)
 if (registration.ok) {
   const token = registration.data.token
   // Send token to your backend to use the /registration/attach API
@@ -64,6 +64,7 @@ if (registration.ok) {
 
 > [!WARNING]
 > The `name` field cannot be changed at this time - it's not supported by browers.
+> Once browser APIs exist to modify it, we will add support to the SDK.
 
 
 ### Authenticating
@@ -75,7 +76,7 @@ const authInfo: UserAuthenticationInfo = {
   id: 'your_user_id',
   // or handle, as set up during register
 }
-const auth = snapAuth.startAuth(authInfo)
+const auth = await snapAuth.startAuth(authInfo)
 if (auth.ok) {
   const token = auth.data.token
   // Send token to your backend to use the /auth/verify API
@@ -92,7 +93,40 @@ if (auth.ok) {
 
 > [!CAUTION]
 > Do not sign in the user based on getting the client token alone!
-> You MUST send it to the verify endpoint, and inspect its response to get the _verified_ user id to securely authenticate.
+> You MUST send it to the `/auth/verify` endpoint, and inspect its response to get the _verified_ user id to securely authenticate.
+
+#### Authenticating with AutoFill
+
+Most browsers support credential autofill, which will automatically prompt a user to sign in using a previous-registered credential.
+To take advantage of this, you need two things:
+
+1) An `<input>` (or `<textarea>`) field with `autocomplete="username webauthn"` set. We strongly recommend adding these details to your standard sign-in field:
+```html
+<input type="text" name="username" autocomplete="username webauthn" placeholder="Username" />
+```
+
+2) Run the `handleAutofill` API. This takes a callback which runs on successful authentication using the autofill API:
+```typescript
+import { AuthResponse } from '@snapauth/sdk'
+const onSignIn = (auth: AuthResponse) => {
+  if (auth.ok) {
+    // send `auth.data.token` to your backend, as above
+  }
+}
+snapAuth.handleAutofill(onSignIn)
+```
+
+> [!TIP]
+> If using both manual and autofill-assisted sign in, we suggest reusing the `handleAutofill` callback in the traditional flow:
+> ```typescript
+> // continuing from above
+> const auth = await snapAuth.startAuth({ handle })
+> onSignIn(auth)> 
+> ```
+
+> [!NOTE]
+> We only call the `handleAutofill` callback on success.
+> You do not need special handling in the callback for failing; but, like above, you MUST present the token for verification and not trust client data.
 
 ## Building the SDK
 
