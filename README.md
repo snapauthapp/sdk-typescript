@@ -1,12 +1,17 @@
 # SnapAuth TypeScript/JavaScript SDK
 
-The official TS/JS SDK for SnapAuth
+The official TS/JS SDK for SnapAuth 🫰
 
 ## Installation and Setup
 ### Node
 ```bash
-npm i --save '@snapauth/sdk
+npm i --save @snapauth/sdk
 ```
+or
+```bash
+yarn add @snapauth/sdk
+```
+
 ```typescript
 import { SDK } from '@snapauth/sdk'
 const snapAuth = new SDK('pubkey_your_value')
@@ -19,6 +24,71 @@ const snapAuth = new SDK('pubkey_your_value')
 const snapAuth = new SnapAuth.SDK('pubkey_your_value')
 </script>
 ```
+
+## Usage
+### Registering a Credential
+```typescript
+// Type imports are optional, and only apply to TypeScript
+import { UserRegistrationInfo } from '@snapauth/sdk'
+const registerInfo: UserRegistrationInfo = {
+  name: 'any_user_visible_string',
+  id: 'your_user_id', // and/or handle
+}
+const registration = snapAuth.startRegister(registerInfo)
+if (registration.ok) {
+  const token = registration.data.token
+  // Send token to your backend to use the /registration/attach API
+} else {
+  // Inspect registration.error and decide how best to proceed
+}
+
+```
+> [!NOTE]
+> Registration requires you to provide either:
+>
+>   `id`: A stable user identifier
+>   or
+>   `handle`: A possibly-unstable identifier - what the user would type to sign in
+>
+> You may provide both now, and MUST provide both in the backend `attach` API call.
+>
+> You MUST also provide `name`, which is what the user sees during authentication.
+> It is used completelly locally, and not even sent to SnapAuth's servers.
+> This is commonly something like a human name, email address, or login handle.
+>
+> This is reflected in the TypeScript formats.
+
+> [!WARNING]
+> The name field cannot be changed at this time - it's not supported by browers.
+
+
+### Authenticating
+
+```typescript
+// Type imports are optional, and only apply to TypeScript
+import { UserAuthenticationInfo } from '@snapauth/sdk'
+const authInfo: UserAuthenticationInfo = {
+  id: 'your_user_id',
+  // or handle, as set up during register
+}
+const auth = snapAuth.startAuth(authInfo)
+if (auth.ok) {
+  const token = auth.data.token
+  // Send token to your backend to use the /auth/verify API
+  // It will return the verified user's id and handle, which you should use to
+  // sign in the user with your existing mechanism (cookie, token, etc)
+} else {
+  // Inspect auth.error and decide how best to proceed
+}
+```
+
+> [!TIP]
+> You can call the `startAuth` API without any roundtrips to your service by using `handle` instead of `id`.
+> This matches the value configured during registration.
+
+> [!CAUTION]
+> Do not sign in the user based on getting the client token alone!
+> You MUST send it to the verify endpoint, and inspect its response to get the _verified_ user id to securely authenticate.
 
 ## Building the SDK
 
