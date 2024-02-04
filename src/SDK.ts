@@ -47,7 +47,7 @@ class SDK {
   private apiKey: string
   private host: string
 
-  constructor(publicKey: string, host: string = 'https://api.webauthn.biz') {
+  constructor(publicKey: string, host: string = 'https://api.snapauth.app') {
     this.apiKey = publicKey
     this.host = host
   }
