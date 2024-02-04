@@ -1,7 +1,7 @@
 {
-  "name": "@webauthnbiz/sdk",
-  "version": "0.0.7",
-  "description": "My Awesome SDK",
+  "name": "@snapauth/sdk",
+  "version": "0.1.0",
+  "description": "SnapAuth JS/TS SDK",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
