@@ -35,22 +35,19 @@ For use with vanilla JavaScript, omit the type imports and annotations.
 > This includes `onClick`, `onSubmit`, etc.
 
 ### Registering a Credential
+
 ```typescript
-// Type imports are optional, and only apply to TypeScript
-import { UserRegistrationInfo } from '@snapauth/sdk'
-const registerInfo: UserRegistrationInfo = {
-  name: 'any_user_visible_string',
-  id: 'your_user_id', // and/or handle
-}
-const registration = await snapAuth.startRegister(registerInfo)
+// Get `handle` and `name` from fields in your UI.
+// You MAY use the value of handle for name, but MUST explicitly do so.
+const registration = await snapAuth.startRegister({ handle, name })
 if (registration.ok) {
   const token = registration.data.token
   // Send token to your backend to use the /registration/attach API
 } else {
   // Inspect registration.error and decide how best to proceed
 }
-
 ```
+
 > [!NOTE]
 > Registration requires you to provide either:
 >
@@ -118,6 +115,7 @@ To take advantage of this, you need two things:
 
 2) Run the `handleAutofill` API. This takes a callback which runs on successful authentication using the autofill API:
 ```typescript
+// Type import is optional, but recommended.
 import { AuthResponse } from '@snapauth/sdk'
 const onSignIn = (auth: AuthResponse) => {
   if (auth.ok) {
@@ -134,7 +132,7 @@ snapAuth.handleAutofill(onSignIn)
 > [!TIP]
 > Re-use the `handleAutofill` callback in the traditional flow to create a consistent experience:
 ```typescript
-const onSignIn = async (auth: AuthResponse) => {
+const validateAuth = async (auth: AuthResponse) => {
   if (auth.ok) {
     await fetch(...) // send auth.data.token
   }
@@ -142,9 +140,9 @@ const onSignIn = async (auth: AuthResponse) => {
 const onSignInSubmit = async (e) => {
   // ...
   const auth = await snapAuth.startAuth({ handle })
-  await onSignIn(auth)
+  await validateAuth(auth)
 }
-sdk.handleAutofill(onSignIn)
+sdk.handleAutofill(validateAuth)
 ```
 
 > [!TIP]
