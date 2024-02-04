@@ -38,6 +38,7 @@ type UserIdOrHandle =
   | { handle: string }
 type OptionalUserIdOrHandle = UserIdOrHandle | undefined
 
+export type UserAuthenticationInfo = UserIdOrHandle
 export type UserRegistrationInfo = {
   name: string
   displayName?: string
@@ -47,7 +48,7 @@ class SDK {
   private apiKey: string
   private host: string
 
-  constructor(publicKey: string, host: string = 'https://api.webauthn.biz') {
+  constructor(publicKey: string, host: string = 'https://api.snapauth.app') {
     this.apiKey = publicKey
     this.host = host
   }
@@ -62,7 +63,7 @@ class SDK {
     // }
   }
 
-  async startAuth(user: UserIdOrHandle): Promise<AuthResponse> {
+  async startAuth(user: UserAuthenticationInfo): Promise<AuthResponse> {
     this.requireWebAuthn()
     const res = await this.api('/auth/createOptions', { user }) as Result<CredentialRequestOptionsJSON, WebAuthnError>
     if (!res.ok) {
@@ -113,7 +114,13 @@ class SDK {
       return
     }
     const options = parseRequestOptions(res.data)
-    callback(await this.doAuth(options, undefined))
+    const response = await this.doAuth(options, undefined)
+    if (response.ok) {
+      callback(response)
+    } else {
+      // User aborted conditional mediation (UI doesn't even exist in all
+      // browsers). Do not run the callback.
+    }
   }
 
   private async doAuth(options: CredentialRequestOptions, user: UserIdOrHandle|undefined): Promise<AuthResponse> {
