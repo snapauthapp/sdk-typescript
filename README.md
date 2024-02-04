@@ -75,6 +75,7 @@ if (registration.ok) {
 ```typescript
 // Type imports are optional, and only apply to TypeScript
 import { UserAuthenticationInfo } from '@snapauth/sdk'
+// This would typically be in an onClick/onSubmit handler
 const authInfo: UserAuthenticationInfo = {
   id: 'your_user_id',
   // or handle, as set up during register
@@ -124,7 +125,7 @@ snapAuth.handleAutofill(onSignIn)
 > ```typescript
 > // continuing from above
 > const auth = await snapAuth.startAuth({ handle })
-> onSignIn(auth)> 
+> onSignIn(auth)
 > ```
 
 > [!NOTE]
