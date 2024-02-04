@@ -38,6 +38,7 @@ type UserIdOrHandle =
   | { handle: string }
 type OptionalUserIdOrHandle = UserIdOrHandle | undefined
 
+export type UserAuthenticationInfo = UserIdOrHandle
 export type UserRegistrationInfo = {
   name: string
   displayName?: string
@@ -62,7 +63,7 @@ class SDK {
     // }
   }
 
-  async startAuth(user: UserIdOrHandle): Promise<AuthResponse> {
+  async startAuth(user: UserAuthenticationInfo): Promise<AuthResponse> {
     this.requireWebAuthn()
     const res = await this.api('/auth/createOptions', { user }) as Result<CredentialRequestOptionsJSON, WebAuthnError>
     if (!res.ok) {
