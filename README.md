@@ -26,6 +26,9 @@ const snapAuth = new SnapAuth.SDK('pubkey_your_value')
 ```
 
 ## Usage
+All examples are in TypeScript.
+For use with vanilla JavaScript, omit the type imports and annotations.
+
 ### Registering a Credential
 ```typescript
 // Type imports are optional, and only apply to TypeScript
@@ -102,7 +105,7 @@ To take advantage of this, you need two things:
 
 1) An `<input>` (or `<textarea>`) field with `autocomplete="username webauthn"` set. We strongly recommend adding these details to your standard sign-in field:
 ```html
-<input type="text" name="username" autocomplete="username webauthn" placeholder="Username" />
+<input type="text" autocomplete="username webauthn" placeholder="Username" />
 ```
 
 2) Run the `handleAutofill` API. This takes a callback which runs on successful authentication using the autofill API:
