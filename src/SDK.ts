@@ -42,7 +42,9 @@ export type UserAuthenticationInfo = UserIdOrHandle
 export type UserRegistrationInfo = {
   name: string
   displayName?: string
-} & UserIdOrHandle
+  id?: string
+  handle?: string
+}
 
 class SDK {
   private apiKey: string
@@ -76,8 +78,17 @@ class SDK {
   async startRegister(user: UserRegistrationInfo): Promise<RegisterResponse> {
     try {
       this.requireWebAuthn()
-      // @ts-ignore Strip user name info before sending, it gets added back in later locally
-      const remoteUserData: UserIdOrHandle = { id: user.id, handle: user.handle }
+      // If user info provided, send only the id or handle. Do NOT send name or
+      // displayName.
+      let remoteUserData: UserIdOrHandle | undefined
+      if (user.id || user.handle) {
+        remoteUserData = {
+          id: user.id,
+          // @ts-ignore figure this type hack out later
+          handle: user.handle,
+        }
+      }
+
       const res = await this.api('/registration/createOptions', { user: remoteUserData }) as Result<CredentialCreationOptionsJSON, WebAuthnError>
       if (!res.ok) {
         return res
