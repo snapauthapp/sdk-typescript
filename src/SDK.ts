@@ -156,7 +156,7 @@ class SDK {
       Accept: 'application/json',
       'Content-type': 'application/json',
       Authorization: `Basic ${btoa(this.apiKey + ':')}`,
-      'User-agent': `blah tssdk/${VERSION}`,
+      'X-SDK': `js/${VERSION}`,
     })
 
     const request = new Request(this.host + path, {
