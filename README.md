@@ -37,9 +37,9 @@ For use with vanilla JavaScript, omit the type imports and annotations.
 ### Registering a Credential
 
 ```typescript
-// Get `handle` and `name` from fields in your UI.
-// You MAY use the value of handle for name, but MUST explicitly do so.
-const registration = await snapAuth.startRegister({ handle, name })
+// Get `name` from a field in your UI, your backend, etc.
+// This is what the user will see when authenticating
+const registration = await snapAuth.startRegister({ name })
 if (registration.ok) {
   const token = registration.data.token
   // Send token to your backend to use the /registration/attach API
@@ -49,16 +49,7 @@ if (registration.ok) {
 ```
 
 > [!NOTE]
-> Registration requires you to provide either:
->
->   `id`: A stable user identifier (e.g. primary key), or
->
->   `handle`: A possibly-unstable identifier - what the user would type to sign in
->
-> You may provide both now, and MUST provide both in the backend `attach` API call.
->
-> You MUST also provide `name`, which is what the user sees during authentication.
-> It is used completelly locally, and not even sent to SnapAuth's servers.
+> The `name` value is used completely locally, and not even sent to SnapAuth's servers.
 > This is commonly something like a human name, email address, or login handle.
 >
 > You MAY also set `displayName`.
@@ -100,7 +91,7 @@ if (auth.ok) {
 
 > [!CAUTION]
 > DO NOT sign in the user based on getting the client token alone!
-> You MUST send it to the `/auth/verify` endpoint, and inspect its response to get the _verified_ user id to securely authenticate.
+> You MUST send it to the `/auth/verify` Server API endpoint, and inspect its response to get the _verified_ user id to securely authenticate.
 
 #### AutoFill-assisted requests
 
