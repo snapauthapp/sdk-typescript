@@ -10,7 +10,6 @@
     "outDir": "./dist",
     "sourceMap": true,
     "removeComments": true,
-    "resolveJsonModule": true,
     "declaration": true
   },
   "include": ["src", "types"],
