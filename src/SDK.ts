@@ -1,3 +1,6 @@
+// This constant is set by webpack during the build process
+declare var VERSION: string
+
 import {
   base64URLToArrayBuffer,
   arrayBufferToBase64URL,
@@ -154,6 +157,7 @@ class SDK {
       Accept: 'application/json',
       'Content-type': 'application/json',
       Authorization: `Basic ${btoa(this.apiKey + ':')}`,
+      'X-SDK': `js/${VERSION}`,
     })
 
     const request = new Request(this.host + path, {

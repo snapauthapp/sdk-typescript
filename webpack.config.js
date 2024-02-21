@@ -1,4 +1,5 @@
 const path = require('path')
+const webpack = require('webpack')
 
 module.exports = {
   entry: './src/index.ts',
@@ -10,6 +11,11 @@ module.exports = {
     library: 'SnapAuth',
     libraryTarget: 'umd',
   },
+  plugins: [
+    new webpack.DefinePlugin({
+      VERSION: JSON.stringify(require('./package.json').version),
+    }),
+  ],
   module: {
     rules: [
       {
