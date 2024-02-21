@@ -1,3 +1,4 @@
+// This constant is set by webpack during the build process
 declare var VERSION: string
 
 import {
