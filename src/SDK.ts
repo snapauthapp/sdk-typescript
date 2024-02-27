@@ -52,7 +52,7 @@ export type UserRegistrationInfo = {
 class SDK {
   private apiKey: string
   private host: string
-  private abortSignals: { [key: symbol]: AbortController } = {}
+  private abortSignals: AbortController[] = []
 
   constructor(publicKey: string, host: string = 'https://api.snapauth.app') {
     this.apiKey = publicKey
@@ -70,6 +70,7 @@ class SDK {
   }
 
   async startAuth(user: UserAuthenticationInfo): Promise<AuthResponse> {
+    console.debug('sa')
     this.requireWebAuthn()
     const res = await this.api('/auth/createOptions', { user }) as Result<CredentialRequestOptionsJSON, WebAuthnError>
     if (!res.ok) {
@@ -80,7 +81,7 @@ class SDK {
   }
 
   async startRegister(user: UserRegistrationInfo): Promise<RegisterResponse> {
-    console.debug('start register')
+    console.debug('sr')
     const signal = this.cancelExistingRequests()
     // const asym = this.cancelExistingRequest()
     // const signal = this.CER()
@@ -254,18 +255,25 @@ class SDK {
    * So now this will try to cancel any pending request when a new one starts.
    */
   private cancelExistingRequests(): AbortSignal {
-    for (let s of Object.getOwnPropertySymbols(this.abortSignals)) {
-      console.debug('aborting from CER')
-      this.abortSignals[s].abort('bye')
-      delete this.abortSignals[s]
-    }
+    this.abortSignals.forEach(signal => {
+      signal.abort('aborting')
+      // delete this.abortSignals[idx]
+    })
+    // for (let s of this.abortSignals) {
+    //   console.debug('aborting from CER')
+
+    //   s.abort('bye')
+    //   delete this.abortSignals[s]
+    // }
     // if (this.abortController) {
     //   console.debug('found existing, aborting it')
     //   this.abortController.abort('New request starting')
     // }
-    const sym = Symbol()
+    // const sym = Symbol()
     const ac = new AbortController()
-    this.abortSignals[sym] = ac
+    // Replace entirely
+    this.abortSignals = [ac]
+    // this.abortSignals[] = ac
     console.debug('setting new')
     // this.abortController = new AbortController()
     return ac.signal
