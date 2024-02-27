@@ -52,10 +52,13 @@ export type UserRegistrationInfo = {
 class SDK {
   private apiKey: string
   private host: string
+  // private abortController: AbortController
+  private abortController: AbortController|null = null
 
   constructor(publicKey: string, host: string = 'https://api.snapauth.app') {
     this.apiKey = publicKey
     this.host = host
+    // this.abortController = new AbortController()
   }
 
   get isWebAuthnAvailable() {
@@ -111,6 +114,7 @@ class SDK {
   }
 
   async handleAutofill(callback: (arg0: AuthResponse) => void) {
+    console.debug('handle autofill starated')
     if (!PublicKeyCredential.isConditionalMediationAvailable) {
       return false
     }
@@ -132,12 +136,20 @@ class SDK {
     if (response.ok) {
       callback(response)
     } else {
+      console.error('HAF nope', response)
       // User aborted conditional mediation (UI doesn't even exist in all
       // browsers). Do not run the callback.
     }
   }
 
   private async doAuth(options: CredentialRequestOptions, user: UserIdOrHandle|undefined): Promise<AuthResponse> {
+    if (this.abortController) {
+      this.abortController.abort('Another request is starting')
+      this.abortController = null
+    }
+    this.abortController = new AbortController()
+    options.signal = this.abortController.signal
+    console.debug('init AC')
     try {
       const credential = await navigator.credentials.get(options)
       this.mustBePublicKeyCredential(credential)
