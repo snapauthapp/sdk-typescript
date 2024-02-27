@@ -81,7 +81,7 @@ class SDK {
 
   async startRegister(user: UserRegistrationInfo): Promise<RegisterResponse> {
     console.debug('start register')
-    const [symbol, signal] = this.cancelExistingRequests()
+    const signal = this.cancelExistingRequests()
     // const asym = this.cancelExistingRequest()
     // const signal = this.CER()
     try {
@@ -151,7 +151,7 @@ class SDK {
 
   private async doAuth(options: CredentialRequestOptions, user: UserIdOrHandle|undefined): Promise<AuthResponse> {
     console.debug('start auth')
-    const [symbol, signal] = this.cancelExistingRequests()
+    const signal = this.cancelExistingRequests()
     // options.signal = this.cancelExistingRequest()
     // const asym = this.cancelExistingRequest()
     // options.signal = this.aborts[asym].signal
@@ -253,7 +253,7 @@ class SDK {
    *
    * So now this will try to cancel any pending request when a new one starts.
    */
-  private cancelExistingRequests(): [symbol, AbortSignal] {
+  private cancelExistingRequests(): AbortSignal {
     for (let s of Object.getOwnPropertySymbols(this.abortSignals)) {
       console.debug('aborting from CER')
       this.abortSignals[s].abort('bye')
@@ -268,7 +268,8 @@ class SDK {
     this.abortSignals[sym] = ac
     console.debug('setting new')
     // this.abortController = new AbortController()
-    return [sym, ac.signal]
+    return ac.signal
+    // return [sym, ac.signal]
     // return this.abortController.signal
   }
 
