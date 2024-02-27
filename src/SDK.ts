@@ -100,6 +100,7 @@ class SDK {
         return res
       }
       const options = parseCreateOptions(user, res.data)
+      options.signal = this.cancelExistingRequests()
 
       const credential = await navigator.credentials.create(options)
       this.mustBePublicKeyCredential(credential)
@@ -110,6 +111,8 @@ class SDK {
       return response
     } catch (error) {
       return error instanceof Error ? this.convertCredentialsError(error) : this.genericError(error)
+    } finally {
+      this.abortController = null
     }
   }
 
@@ -143,13 +146,7 @@ class SDK {
   }
 
   private async doAuth(options: CredentialRequestOptions, user: UserIdOrHandle|undefined): Promise<AuthResponse> {
-    if (this.abortController) {
-      this.abortController.abort('Another request is starting')
-      this.abortController = null
-    }
-    this.abortController = new AbortController()
-    options.signal = this.abortController.signal
-    console.debug('init AC')
+    options.signal = this.cancelExistingRequests()
     try {
       const credential = await navigator.credentials.get(options)
       this.mustBePublicKeyCredential(credential)
@@ -161,6 +158,8 @@ class SDK {
       })
     } catch (error) {
       return error instanceof Error ? this.convertCredentialsError(error) : this.genericError(error)
+    } finally {
+      this.abortController = null
     }
   }
 
@@ -238,6 +237,21 @@ class SDK {
     return formatError('network_error', error)
   }
 
+  /**
+   * This is primarily to deal with inconsistent browser behavior around
+   * conditional mediation. Safari (and FF?) permit having a CM request pending
+   * while starting a new modal request. If you try to do the same in Chrome,
+   * it errors out indicating that another request is running.
+   *
+   * So now this will try to cancel any pending request when a new one starts.
+   */
+  private cancelExistingRequests(): AbortSignal {
+    if (this.abortController) {
+      this.abortController.abort('New request starting')
+    }
+    this.abortController = new AbortController()
+    return this.abortController.signal
+  }
 }
 
 const formatError = <T>(error: WebAuthnError, obj: Error): Result<T, WebAuthnError> => ({
