@@ -70,7 +70,6 @@ class SDK {
   }
 
   async startAuth(user: UserAuthenticationInfo): Promise<AuthResponse> {
-    console.debug('sa')
     this.requireWebAuthn()
     const res = await this.api('/auth/createOptions', { user }) as Result<CredentialRequestOptionsJSON, WebAuthnError>
     if (!res.ok) {
@@ -81,10 +80,10 @@ class SDK {
   }
 
   async startRegister(user: UserRegistrationInfo): Promise<RegisterResponse> {
-    console.debug('sr')
+    // If you do this inside the try/catch it seems to fail. Some sort of race
+    // condition w/ the other request being canceled AFAICT. Doesn't make total
+    // sense to me and may be a browser specific issue.
     const signal = this.cancelExistingRequests()
-    // const asym = this.cancelExistingRequest()
-    // const signal = this.CER()
     try {
       this.requireWebAuthn()
       // If user info provided, send only the id or handle. Do NOT send name or
@@ -103,7 +102,6 @@ class SDK {
         return res
       }
       const options = parseCreateOptions(user, res.data)
-      // options.signal = this.aborts[asym].signal
       options.signal = signal
 
       const credential = await navigator.credentials.create(options)
@@ -114,14 +112,11 @@ class SDK {
       const response = await this.api('/registration/process', { credential: json, user }) as RegisterResponse
       return response
     } catch (error) {
-      console.error('reg error')
-      console.error(error)
       return error instanceof Error ? this.convertCredentialsError(error) : this.genericError(error)
     }
   }
 
   async handleAutofill(callback: (arg0: AuthResponse) => void) {
-    console.debug('handle autofill starated')
     if (!PublicKeyCredential.isConditionalMediationAvailable) {
       return false
     }
@@ -143,20 +138,13 @@ class SDK {
     if (response.ok) {
       callback(response)
     } else {
-      console.error('HAF failed')
-      console.error(response)
       // User aborted conditional mediation (UI doesn't even exist in all
       // browsers). Do not run the callback.
     }
   }
 
   private async doAuth(options: CredentialRequestOptions, user: UserIdOrHandle|undefined): Promise<AuthResponse> {
-    console.debug('start auth')
     const signal = this.cancelExistingRequests()
-    // options.signal = this.cancelExistingRequest()
-    // const asym = this.cancelExistingRequest()
-    // options.signal = this.aborts[asym].signal
-    // options.signal = this.CER()
     try {
       options.signal = signal
       const credential = await navigator.credentials.get(options)
@@ -256,29 +244,11 @@ class SDK {
    */
   private cancelExistingRequests(): AbortSignal {
     this.abortSignals.forEach(signal => {
-      signal.abort('aborting')
-      // delete this.abortSignals[idx]
+      signal.abort('Starting new request')
     })
-    // for (let s of this.abortSignals) {
-    //   console.debug('aborting from CER')
-
-    //   s.abort('bye')
-    //   delete this.abortSignals[s]
-    // }
-    // if (this.abortController) {
-    //   console.debug('found existing, aborting it')
-    //   this.abortController.abort('New request starting')
-    // }
-    // const sym = Symbol()
     const ac = new AbortController()
-    // Replace entirely
     this.abortSignals = [ac]
-    // this.abortSignals[] = ac
-    console.debug('setting new')
-    // this.abortController = new AbortController()
     return ac.signal
-    // return [sym, ac.signal]
-    // return this.abortController.signal
   }
 
 }
