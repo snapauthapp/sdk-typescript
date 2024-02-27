@@ -52,14 +52,11 @@ export type UserRegistrationInfo = {
 class SDK {
   private apiKey: string
   private host: string
-  // private abortController: AbortController
-  // private abortController: AbortController|null = null
   private abortSignals: { [key: symbol]: AbortController } = {}
 
   constructor(publicKey: string, host: string = 'https://api.snapauth.app') {
     this.apiKey = publicKey
     this.host = host
-    // this.abortController = new AbortController()
   }
 
   get isWebAuthnAvailable() {
