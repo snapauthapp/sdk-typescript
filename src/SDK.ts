@@ -49,8 +49,6 @@ export type UserRegistrationInfo = {
   handle?: string
 }
 
-// type SymD<T> = { [key: Symbol]: T }
-
 class SDK {
   private apiKey: string
   private host: string
@@ -121,10 +119,6 @@ class SDK {
       console.error('reg error')
       console.error(error)
       return error instanceof Error ? this.convertCredentialsError(error) : this.genericError(error)
-    } finally {
-      delete this.abortSignals[symbol]
-    //   console.debug('clearing AC reg')
-    //   this.abortController = null
     }
   }
 
@@ -176,13 +170,7 @@ class SDK {
         user,
       })
     } catch (error) {
-      console.debug('auth error')
-      console.error(error)
       return error instanceof Error ? this.convertCredentialsError(error) : this.genericError(error)
-    } finally {
-    //   console.debug('clear auth AC')
-    //   this.abortController = null
-      delete this.abortSignals[symbol]
     }
   }
 
@@ -269,6 +257,11 @@ class SDK {
    * So now this will try to cancel any pending request when a new one starts.
    */
   private cancelExistingRequests(): [symbol, AbortSignal] {
+    for (let s of Object.getOwnPropertySymbols(this.abortSignals)) {
+      console.debug('aborting from CER')
+      this.abortSignals[s].abort('bye')
+      delete this.abortSignals[s]
+    }
     // if (this.abortController) {
     //   console.debug('found existing, aborting it')
     //   this.abortController.abort('New request starting')
