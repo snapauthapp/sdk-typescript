@@ -49,11 +49,14 @@ export type UserRegistrationInfo = {
   handle?: string
 }
 
+// type SymD<T> = { [key: Symbol]: T }
+
 class SDK {
   private apiKey: string
   private host: string
   // private abortController: AbortController
-  private abortController: AbortController|null = null
+  // private abortController: AbortController|null = null
+  private abortSignals: { [key: symbol]: AbortController } = {}
 
   constructor(publicKey: string, host: string = 'https://api.snapauth.app') {
     this.apiKey = publicKey
@@ -82,6 +85,10 @@ class SDK {
   }
 
   async startRegister(user: UserRegistrationInfo): Promise<RegisterResponse> {
+    console.debug('start register')
+    const [symbol, signal] = this.cancelExistingRequests()
+    // const asym = this.cancelExistingRequest()
+    // const signal = this.CER()
     try {
       this.requireWebAuthn()
       // If user info provided, send only the id or handle. Do NOT send name or
@@ -100,7 +107,8 @@ class SDK {
         return res
       }
       const options = parseCreateOptions(user, res.data)
-      options.signal = this.cancelExistingRequests()
+      // options.signal = this.aborts[asym].signal
+      options.signal = signal
 
       const credential = await navigator.credentials.create(options)
       this.mustBePublicKeyCredential(credential)
@@ -110,9 +118,13 @@ class SDK {
       const response = await this.api('/registration/process', { credential: json, user }) as RegisterResponse
       return response
     } catch (error) {
+      console.error('reg error')
+      console.error(error)
       return error instanceof Error ? this.convertCredentialsError(error) : this.genericError(error)
     } finally {
-      this.abortController = null
+      delete this.abortSignals[symbol]
+    //   console.debug('clearing AC reg')
+    //   this.abortController = null
     }
   }
 
@@ -139,15 +151,22 @@ class SDK {
     if (response.ok) {
       callback(response)
     } else {
-      console.error('HAF nope', response)
+      console.error('HAF failed')
+      console.error(response)
       // User aborted conditional mediation (UI doesn't even exist in all
       // browsers). Do not run the callback.
     }
   }
 
   private async doAuth(options: CredentialRequestOptions, user: UserIdOrHandle|undefined): Promise<AuthResponse> {
-    options.signal = this.cancelExistingRequests()
+    console.debug('start auth')
+    const [symbol, signal] = this.cancelExistingRequests()
+    // options.signal = this.cancelExistingRequest()
+    // const asym = this.cancelExistingRequest()
+    // options.signal = this.aborts[asym].signal
+    // options.signal = this.CER()
     try {
+      options.signal = signal
       const credential = await navigator.credentials.get(options)
       this.mustBePublicKeyCredential(credential)
       const json = authenticationResponseToJSON(credential)
@@ -157,9 +176,13 @@ class SDK {
         user,
       })
     } catch (error) {
+      console.debug('auth error')
+      console.error(error)
       return error instanceof Error ? this.convertCredentialsError(error) : this.genericError(error)
     } finally {
-      this.abortController = null
+    //   console.debug('clear auth AC')
+    //   this.abortController = null
+      delete this.abortSignals[symbol]
     }
   }
 
@@ -245,13 +268,20 @@ class SDK {
    *
    * So now this will try to cancel any pending request when a new one starts.
    */
-  private cancelExistingRequests(): AbortSignal {
-    if (this.abortController) {
-      this.abortController.abort('New request starting')
-    }
-    this.abortController = new AbortController()
-    return this.abortController.signal
+  private cancelExistingRequests(): [symbol, AbortSignal] {
+    // if (this.abortController) {
+    //   console.debug('found existing, aborting it')
+    //   this.abortController.abort('New request starting')
+    // }
+    const sym = Symbol()
+    const ac = new AbortController()
+    this.abortSignals[sym] = ac
+    console.debug('setting new')
+    // this.abortController = new AbortController()
+    return [sym, ac.signal]
+    // return this.abortController.signal
   }
+
 }
 
 const formatError = <T>(error: WebAuthnError, obj: Error): Result<T, WebAuthnError> => ({
