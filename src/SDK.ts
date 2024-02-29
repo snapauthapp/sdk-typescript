@@ -52,6 +52,7 @@ export type UserRegistrationInfo = {
 class SDK {
   private apiKey: string
   private host: string
+  private abortSignals: AbortController[] = []
 
   constructor(publicKey: string, host: string = 'https://api.snapauth.app') {
     this.apiKey = publicKey
@@ -79,6 +80,10 @@ class SDK {
   }
 
   async startRegister(user: UserRegistrationInfo): Promise<RegisterResponse> {
+    // If you do this inside the try/catch it seems to fail. Some sort of race
+    // condition w/ the other request being canceled AFAICT. Doesn't make total
+    // sense to me and may be a browser specific issue.
+    const signal = this.cancelExistingRequests()
     try {
       this.requireWebAuthn()
       // If user info provided, send only the id or handle. Do NOT send name or
@@ -97,6 +102,7 @@ class SDK {
         return res
       }
       const options = parseCreateOptions(user, res.data)
+      options.signal = signal
 
       const credential = await navigator.credentials.create(options)
       this.mustBePublicKeyCredential(credential)
@@ -138,7 +144,9 @@ class SDK {
   }
 
   private async doAuth(options: CredentialRequestOptions, user: UserIdOrHandle|undefined): Promise<AuthResponse> {
+    const signal = this.cancelExistingRequests()
     try {
+      options.signal = signal
       const credential = await navigator.credentials.get(options)
       this.mustBePublicKeyCredential(credential)
       const json = authenticationResponseToJSON(credential)
@@ -224,6 +232,23 @@ class SDK {
     // unresolvable hosts, etc. Log this one as it's pretty weird.
     console.error('Non-timeout network error', error)
     return formatError('network_error', error)
+  }
+
+  /**
+   * This is primarily to deal with inconsistent browser behavior around
+   * conditional mediation. Safari (and FF?) permit having a CM request pending
+   * while starting a new modal request. If you try to do the same in Chrome,
+   * it errors out indicating that another request is running.
+   *
+   * So now this will try to cancel any pending request when a new one starts.
+   */
+  private cancelExistingRequests(): AbortSignal {
+    this.abortSignals.forEach(signal => {
+      signal.abort('Starting new request')
+    })
+    const ac = new AbortController()
+    this.abortSignals = [ac]
+    return ac.signal
   }
 
 }
