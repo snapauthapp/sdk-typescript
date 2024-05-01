@@ -2,6 +2,19 @@
 
 The official TS/JS SDK for SnapAuth 🫰
 
+This is for _client_ code.
+If you're looking for the _server_ integration, check out [`@snapauth/node-sdk`](https://github.com/snapauthapp/sdk-node).
+
+[![NPM Version](https://img.shields.io/npm/v/%40snapauth%2Fsdk)](https://www.npmjs.com/package/@snapauth/sdk)
+![npm bundle size](https://img.shields.io/bundlephobia/minzip/%40snapauth%2Fsdk)
+![NPM Type Definitions](https://img.shields.io/npm/types/%40snapauth%2Fsdk)
+![GitHub License](https://img.shields.io/github/license/snapauthapp/sdk-typescript)
+
+- [SnapAuth Homepage](https://www.snapauth.app)
+- [Docs](https://docs.snapauth.app)
+- [Dashboard](https://dashboard.snapauth.app)
+- [Github](https://github.com/snapauthapp/sdk-typescript)
+
 ## Installation and Setup
 ### Node
 ```bash
@@ -19,20 +32,22 @@ const snapAuth = new SDK('pubkey_your_value')
 
 ### Directly linking (UMD)
 ```html
-<script src="https://unpkg.com/@snapauth/sdk@0.1.0/dist/index.js"></script>
+<script src="https://unpkg.com/@snapauth/sdk@0.1.4/dist/index.js"></script>
 <script type="text/javascript">
 const snapAuth = new SnapAuth.SDK('pubkey_your_value')
 </script>
 ```
 
+> [!NOTE]
+> Replace `pubkey_your_value` with the _publishable key_ for your domain from the [dashboard](https://dashboard.snapauth.app).
+> Publishable keys are domain-specific and the domain MUST match what's in the browser's address bar.
+
 ## Usage
 All examples are in TypeScript.
 For use with vanilla JavaScript, omit the type imports and annotations.
 
-> [!IMPORTANT]
-> Both registration and authentication MUST be called in response to a user gesture.
-> Browsers will block the attempt otherwise.
-> This includes `onClick`, `onSubmit`, etc.
+These should be run in response to a button click, form submission, etc.
+Browsers will ignore most WebAuthn requests that are not in response to a user gesture.
 
 ### Registering a Credential
 
@@ -48,24 +63,22 @@ if (registration.ok) {
 }
 ```
 
-> [!NOTE]
-> The `name` value is used completely locally, and not even sent to SnapAuth's servers.
-> This is commonly something like a human name, email address, or login handle.
+> [!IMPORTANT]
+> You MUST send the token to the backend [`/registration/attach`](https://docs.snapauth.app/server.html#attach-registration-token) API to associate it with the user.
+> Until this is done, the user will not be able to use their new credential.
 >
-> You MAY also set `displayName`.
-> If not provided, we default it to the `name` value.
-> Browsers typically (counter-intuitively) ignore `displayName` in favor of `name`.
->
-> This is reflected in the TypeScript formats.
+> For security, the token expires in a few minutes.
+> The response includes a `expiresAt` field indicating when this needs to be done.
 
-> [!CAUTION]
-> You MUST send the token to the backend `/registration/attach` API to associate it with the user.
-> Failure to do so will prevent the user from signing in the credential they just created.
-> The response also includes a `expiresAt` field containing a Unix timestamp indicating by when the token must be attached.
+The `name` value is used completely locally, and _is not sent to SnapAuth's servers_.
+This is commonly something like a human name, email address, or login handle.
+This will be visible to the user when they sign in.
 
 > [!WARNING]
-> The `name` field cannot be changed at this time - it's not supported by browers.
+> The `name` field cannot be changed at this time - it's not supported by browsers.
 > Once browser APIs exist to modify it, we will add support to the SDK.
+
+You may also set `displayName`, though browsers typically (counter-intuitively) ignore `displayName` in favor of `name`.
 
 
 ### Authenticating
@@ -84,18 +97,18 @@ if (auth.ok) {
 }
 ```
 
-> [!TIP]
-> You may use `id` or `handle` when calling `startAuth()`.
-> Using `id` will typically require a roundtrip to your service, but tends to be necessary if you normalize handles.
-> Both values are **case-insensitive**.
+You may use `id` or `handle` when calling `startAuth()`.
+`id` is great when you already know who is signing in (returning user, MFA flows, etc); `handle` is more streamlined when initially authenticating.
+
+Both values are **case-insensitive**.
 
 > [!CAUTION]
 > DO NOT sign in the user based on getting the client token alone!
-> You MUST send it to the `/auth/verify` Server API endpoint, and inspect its response to get the _verified_ user id to securely authenticate.
+> You MUST send it to the [`/auth/verify`](https://docs.snapauth.app/server.html#verify-authentication-token) Server API endpoint, and inspect its response to get the _verified_ user id to securely authenticate.
 
 #### AutoFill-assisted requests
 
-Most browsers support credential autofill, which will automatically prompt a user to sign in using a previous-registered credential.
+Most browsers support credential autofill, which will automatically prompt a user to sign in using a previously-registered credential.
 To take advantage of this, you need two things:
 
 1) An `<input>` (or `<textarea>`) field with `autocomplete="username webauthn"` set[^1].
@@ -116,12 +129,12 @@ const onSignIn = (auth: AuthResponse) => {
 snapAuth.handleAutofill(onSignIn)
 ```
 
-> [!IMPORTANT]
-> Never rely on the autofill experience alone.
-> Always treat it as progressive enhancement to the standard flow.
+Unlike the direct startRegister and startAuth calls, handleAutofill CAN and SHOULD be called as early in the page lifecycle is possible (_not_ in response to a user gesture).
+This helps ensure that autofill can occur when a user interacts with the form field.
 
 > [!TIP]
 > Re-use the `handleAutofill` callback in the traditional flow to create a consistent experience:
+
 ```typescript
 const validateAuth = async (auth: AuthResponse) => {
   if (auth.ok) {
@@ -135,10 +148,6 @@ const onSignInSubmit = async (e) => {
 }
 sdk.handleAutofill(validateAuth)
 ```
-
-> [!TIP]
-> Unlike the direct startRegister and startAuth calls, handleAutofill CAN and SHOULD be called as early in the page lifecycle is possible.
-> This helps ensure that autofill can occur when a user interacts with the form field.
 
 ## Building the SDK
 

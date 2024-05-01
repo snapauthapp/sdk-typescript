@@ -11,6 +11,16 @@
     "docs": "typedoc",
     "prepublishOnly": "npm run build"
   },
+  "keywords": [
+    "2fa",
+    "fido",
+    "mfa",
+    "passkeys",
+    "snapauth",
+    "u2f",
+    "webauthentication",
+    "webauthn"
+  ],
   "devDependencies": {
     "@types/jest": "^29",
     "jest": "^29",
@@ -28,11 +38,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "your-git-repo-url"
+    "url": "git+https://github.com/snapauthapp/sdk-typescript.git"
   },
-  "keywords": [
-    "typescript",
-    "sdk"
-  ],
-  "license": "MIT"
+  "license": "BSD-3-Clause"
 }
