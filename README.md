@@ -6,7 +6,8 @@ This is for _client_ code.
 If you're looking for the _server_ integration, check out [`@snapauth/node-sdk`](https://github.com/snapauthapp/sdk-node).
 
 [![NPM Version](https://img.shields.io/npm/v/%40snapauth%2Fsdk)](https://www.npmjs.com/package/@snapauth/sdk)
-![npm bundle size](https://img.shields.io/bundlephobia/min/%40snapauth%2Fsdk)
+![npm bundle size](https://img.shields.io/bundlephobia/minzip/%40snapauth%2Fsdk)
+![NPM Type Definitions](https://img.shields.io/npm/types/%40snapauth%2Fsdk)
 ![GitHub License](https://img.shields.io/github/license/snapauthapp/sdk-typescript)
 
 - [SnapAuth Homepage](https://www.snapauth.app)
