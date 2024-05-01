@@ -41,7 +41,6 @@ const snapAuth = new SnapAuth.SDK('pubkey_your_value')
 </script>
 ```
 
-
 ## Usage
 All examples are in TypeScript.
 For use with vanilla JavaScript, omit the type imports and annotations.
