@@ -96,18 +96,18 @@ if (auth.ok) {
 }
 ```
 
-> [!TIP]
-> You may use `id` or `handle` when calling `startAuth()`.
-> Using `id` will typically require a roundtrip to your service, but tends to be necessary if you normalize handles.
-> Both values are **case-insensitive**.
+You may use `id` or `handle` when calling `startAuth()`.
+`id` is great when you already know who is signing in (returning user, MFA flows, etc); `handle` is more streamlined when initially authenticating.
+
+Both values are **case-insensitive**.
 
 > [!CAUTION]
 > DO NOT sign in the user based on getting the client token alone!
-> You MUST send it to the `/auth/verify` Server API endpoint, and inspect its response to get the _verified_ user id to securely authenticate.
+> You MUST send it to the [`/auth/verify`](https://docs.snapauth.app/server.html#verify-authentication-token) Server API endpoint, and inspect its response to get the _verified_ user id to securely authenticate.
 
 #### AutoFill-assisted requests
 
-Most browsers support credential autofill, which will automatically prompt a user to sign in using a previous-registered credential.
+Most browsers support credential autofill, which will automatically prompt a user to sign in using a previously-registered credential.
 To take advantage of this, you need two things:
 
 1) An `<input>` (or `<textarea>`) field with `autocomplete="username webauthn"` set[^1].
@@ -128,9 +128,12 @@ const onSignIn = (auth: AuthResponse) => {
 snapAuth.handleAutofill(onSignIn)
 ```
 
+Unlike the direct startRegister and startAuth calls, handleAutofill CAN and SHOULD be called as early in the page lifecycle is possible (_not_ in response to a user gesture).
+This helps ensure that autofill can occur when a user interacts with the form field.
 
 > [!TIP]
 > Re-use the `handleAutofill` callback in the traditional flow to create a consistent experience:
+
 ```typescript
 const validateAuth = async (auth: AuthResponse) => {
   if (auth.ok) {
@@ -144,10 +147,6 @@ const onSignInSubmit = async (e) => {
 }
 sdk.handleAutofill(validateAuth)
 ```
-
-> [!TIP]
-> Unlike the direct startRegister and startAuth calls, handleAutofill CAN and SHOULD be called as early in the page lifecycle is possible.
-> This helps ensure that autofill can occur when a user interacts with the form field.
 
 ## Building the SDK
 
