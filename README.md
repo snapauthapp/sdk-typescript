@@ -24,6 +24,10 @@ or
 yarn add @snapauth/sdk
 ```
 
+> [!NOTE]
+> Replace `pubkey_your_value` with the _publishable key_ for your domain from the [dashboard](https://dashboard.snapauth.app).
+> Publishable keys are domain-specific and the domain MUST match what's in the browser's address bar.
+
 ```typescript
 import { SDK } from '@snapauth/sdk'
 const snapAuth = new SDK('pubkey_your_value')
