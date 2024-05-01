@@ -2,6 +2,18 @@
 
 The official TS/JS SDK for SnapAuth 🫰
 
+This is for _client_ code.
+If you're looking for the _server_ integration, check out [`@snapauth/node-sdk`](https://github.com/snapauthapp/sdk-node).
+
+[![NPM Version](https://img.shields.io/npm/v/%40snapauth%2Fsdk)](https://www.npmjs.com/package/@snapauth/sdk)
+![npm bundle size](https://img.shields.io/bundlephobia/min/%40snapauth%2Fsdk)
+![GitHub License](https://img.shields.io/github/license/snapauthapp/sdk-typescript)
+
+- [SnapAuth Homepage](https://www.snapauth.app)
+- [Docs](https://docs.snapauth.app)
+- [Dashboard](https://dashboard.snapauth.app)
+- [Github](https://github.com/snapauthapp/sdk-typescript)
+
 ## Installation and Setup
 ### Node
 ```bash
@@ -19,11 +31,12 @@ const snapAuth = new SDK('pubkey_your_value')
 
 ### Directly linking (UMD)
 ```html
-<script src="https://unpkg.com/@snapauth/sdk@0.1.0/dist/index.js"></script>
+<script src="https://unpkg.com/@snapauth/sdk@0.1.4/dist/index.js"></script>
 <script type="text/javascript">
 const snapAuth = new SnapAuth.SDK('pubkey_your_value')
 </script>
 ```
+
 
 ## Usage
 All examples are in TypeScript.
