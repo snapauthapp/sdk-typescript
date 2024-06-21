@@ -159,7 +159,9 @@ class SDK {
       // No-op
       return
     }
+    const signal = this.cancelExistingRequests()
     const options = parseCreateOptions(user, res.data)
+    options.signal = signal
     options.mediation = 'conditional'
     const credential = await navigator.credentials.create(options)
     this.mustBePublicKeyCredential(credential)
