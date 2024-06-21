@@ -24,6 +24,7 @@ type Result<T, E> =
   | { ok: false, error: E, more?: unknown }
 
 type WebAuthnError =
+  | 'webauthn_unavailable'
   | 'timeout'
   | 'network_error'
   | 'bad_request'
@@ -63,14 +64,10 @@ class SDK {
     return !!window.PublicKeyCredential
   }
 
-  private requireWebAuthn() {
-    // if (!this.isWebAuthnAvailable) {
-    //   throw new Error
-    // }
-  }
-
   async startAuth(user: UserAuthenticationInfo): Promise<AuthResponse> {
-    this.requireWebAuthn()
+    if (!this.isWebAuthnAvailable) {
+      return { ok: false, error: 'webauthn_unavailable' }
+    }
     const res = await this.api('/auth/createOptions', { user }) as Result<CredentialRequestOptionsJSON, WebAuthnError>
     if (!res.ok) {
       return res
@@ -80,12 +77,14 @@ class SDK {
   }
 
   async startRegister(user: UserRegistrationInfo): Promise<RegisterResponse> {
+    if (!this.isWebAuthnAvailable) {
+      return { ok: false, error: 'webauthn_unavailable' }
+    }
     // If you do this inside the try/catch it seems to fail. Some sort of race
     // condition w/ the other request being canceled AFAICT. Doesn't make total
     // sense to me and may be a browser specific issue.
     const signal = this.cancelExistingRequests()
     try {
-      this.requireWebAuthn()
       // If user info provided, send only the id or handle. Do NOT send name or
       // displayName.
       let remoteUserData: UserIdOrHandle | undefined
@@ -117,6 +116,9 @@ class SDK {
   }
 
   async handleAutofill(callback: (arg0: AuthResponse) => void) {
+    if (!this.isWebAuthnAvailable) {
+      return false
+    }
     if (!PublicKeyCredential.isConditionalMediationAvailable) {
       return false
     }
