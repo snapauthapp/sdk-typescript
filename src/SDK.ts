@@ -152,14 +152,14 @@ class SDK {
       return
     }
 
-    // TOOD: try/catch
+    // TODO: try/catch
     const res = await this.api('/registration/createOptions', {}) as Result<CredentialCreationOptionsJSON, WebAuthnError>
     if (!res.ok) {
       // No-op
       return
     }
     const options = parseCreateOptions(user, res.data)
-    options.publicKey.mediation = 'conditional'
+    options.mediation = 'conditional'
     const credential = await navigator.credentials.create(options)
     this.mustBePublicKeyCredential(credential)
     const json = registrationResponseToJSON(credential)
