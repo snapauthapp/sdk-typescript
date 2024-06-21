@@ -19,6 +19,7 @@ export const parseRequestOptions = (json: CredentialRequestOptionsJSON): Credent
 }
 
 export const parseCreateOptions = (user: UserRegistrationInfo, json: CredentialCreationOptionsJSON): CredentialCreationOptions => {
+  // TODO: mediation (see handleUpgrade)
   // Locally merge in user.name and displayName - they are never sent out and
   // not part of the server response.
   json.publicKey.user = {
