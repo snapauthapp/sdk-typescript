@@ -147,7 +147,7 @@ class SDK {
     if (!window.PublicKeyCredential || !window.PublicKeyCredential.getClientCapabilities) {
       return
     }
-    const capabilities = await PublicKeyCredential.getClientCapabilities()
+    const capabilities = await window.PublicKeyCredential.getClientCapabilities()
     if (!capabilities.conditionalCreate) {
       return
     }

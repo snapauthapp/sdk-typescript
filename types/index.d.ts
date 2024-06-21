@@ -1,9 +1,23 @@
-interface PublicKeyCredentialStaticMethods {
+interface ClientCapabilities {
+  passkeyPlatformAuthenticator: boolean
+  conditionalMediation: boolean
+  conditionalCreate: boolean
+  userVerifyingPlatformAuthenticator: boolean
+  hybridTransport: boolean
+}
+
+interface PublicKeyCredentialConstructor {
+  // New (to-be-standardized?) API, currently Safari only
+  getClientCapabilities?: () => Promise<ClientCapabilities>
+  // Same, currently FF only
   // FIXME: wrong, this is json=>native (pk only?)
   parseCreationOptionsFromJSON?: (data: PublicKeyCredentialCreationOptionsJSON) => PublicKeyCredentialCreationOptions
   parseRequestOptionsFromJSON?: (data: PublicKeyCredentialRequestOptionsJSON) => PublicKeyCredentialRequestOptions
 }
-declare var PublicKeyCredential: PublicKeyCredentialStaticMethods
+// interface Window {
+//   PublicKeyCredential?: PublicKeyCredentialStaticMethods
+// }
+// declare var PublicKeyCredential: PublicKeyCredentialStaticMethods
 
 declare global {
 
@@ -44,6 +58,10 @@ declare global {
   interface PublicKeyCredential {
     toJSON?: () => PublicKeyCredentialJSON
   }
+  interface Window {
+    PublicKeyCredential?: PublicKeyCredentialConstructor
+  }
+  var PublicKeyCredential: PublicKeyCredentialConstructor
   // Same for request extensions
   interface PublicKeyCredentialRequestOptions {
     hints?: PublicKeyCredentialHints[],
