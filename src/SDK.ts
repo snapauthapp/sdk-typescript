@@ -143,6 +143,32 @@ class SDK {
     }
   }
 
+  async handleUpgrade(user: UserRegistrationInfo, callback: (arg0: RegisterResponse) => void) {
+    if (!window.PublicKeyCredential || !window.PublicKeyCredential.getClientCapabilities) {
+      return
+    }
+    const capabilities = await PublicKeyCredential.getClientCapabilities()
+    if (!capabilities.conditionalCreate) {
+      return
+    }
+
+    // TOOD: try/catch
+    const res = await this.api('/registration/createOptions', {}) as Result<CredentialCreationOptionsJSON, WebAuthnError>
+    if (!res.ok) {
+      // No-op
+      return
+    }
+    const options = parseCreateOptions(user, res.data)
+    options.publicKey.mediation = 'conditional'
+    const credential = await navigator.credentials.create(options)
+    this.mustBePublicKeyCredential(credential)
+    const json = registrationResponseToJSON(credential)
+
+    const response = await this.api('/registration/process', { credential: json }) as RegisterResponse
+    callback(response)
+
+  }
+
   private async doAuth(options: CredentialRequestOptions, user: UserIdOrHandle|undefined): Promise<AuthResponse> {
     const signal = this.cancelExistingRequests()
     try {
