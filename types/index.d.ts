@@ -6,6 +6,14 @@ interface PublicKeyCredentialStaticMethods {
 declare var PublicKeyCredential: PublicKeyCredentialStaticMethods
 
 declare global {
+  type JsonEncodable =
+    | string
+    | number
+    | boolean
+    | null
+    | undefined
+    | { [key: string]: JsonEncodable }
+    | JsonEncodable[]
 
   interface PublicKeyCredentialCreationOptionsJSON {
     rp: PublicKeyCredentialRpEntity
