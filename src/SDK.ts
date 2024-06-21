@@ -153,6 +153,7 @@ class SDK {
     }
 
     // TODO: try/catch
+    // TODO: BE upgrade:true param, have it serve `mediation:conditional`
     const res = await this.api('/registration/createOptions', {}) as Result<CredentialCreationOptionsJSON, WebAuthnError>
     if (!res.ok) {
       // No-op
