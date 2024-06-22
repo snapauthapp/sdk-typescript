@@ -150,17 +150,9 @@ class SDK {
   }
 
   async handleAutofill(callback: (arg0: AuthResponse) => void) {
-    if (!this.isWebAuthnAvailable) {
+    if (!(await this.isConditionalMediationAvailable())) {
       return false
     }
-    if (!PublicKeyCredential.isConditionalMediationAvailable) {
-      return false
-    }
-    const isCMA = await PublicKeyCredential.isConditionalMediationAvailable()
-    if (!isCMA) {
-      return false
-    }
-
     // TODO: warn if no <input autocomplete="webauthn"> is found?
 
     // Autofill API is available. Make the calls and set it up.
