@@ -1,5 +1,14 @@
+type ClientCapability =
+  | "conditionalCreate"
+  | "conditionalGet"
+  | "hybridTransport"
+  | "passkeyPlatformAuthenticator"
+  | "userVerifyingPlatformAuthenticator"
+
+type PublicKeyCredentialClientCapabilities = Record<ClientCapability, boolean>
 interface PublicKeyCredentialStaticMethods {
   // FIXME: wrong, this is json=>native (pk only?)
+  getClientCapabilities?: () => Promise<PublicKeyCredentialClientCapabilities>
   parseCreationOptionsFromJSON?: (data: PublicKeyCredentialCreationOptionsJSON) => PublicKeyCredentialCreationOptions
   parseRequestOptionsFromJSON?: (data: PublicKeyCredentialRequestOptionsJSON) => PublicKeyCredentialRequestOptions
 }
@@ -14,6 +23,11 @@ declare global {
     | undefined
     | { [key: string]: JsonEncodable }
     | JsonEncodable[]
+
+  // Tell typescipt about upcoming PKC methods
+  interface Window {
+    PublicKeyCredential?: PublicKeyCredentialStaticMethods
+  }
 
   interface PublicKeyCredentialCreationOptionsJSON {
     rp: PublicKeyCredentialRpEntity
