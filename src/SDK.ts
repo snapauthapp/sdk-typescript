@@ -77,8 +77,7 @@ class SDK {
     return false
   }
 
-  // isConditionalGetAvailable?
-  async isConditionalMediationAvailable(): Promise<boolean> {
+  async isConditionalGetAvailable(): Promise<boolean> {
     if (!window.PublicKeyCredential) {
       return false
     }
@@ -92,6 +91,7 @@ class SDK {
         return cc.conditionalGet
       }
     }
+    // More common (legacy?) API
     if (window.PublicKeyCredential.isConditionalMediationAvailable) {
       return await window.PublicKeyCredential.isConditionalMediationAvailable()
     }
@@ -150,7 +150,7 @@ class SDK {
   }
 
   async handleAutofill(callback: (arg0: AuthResponse) => void) {
-    if (!(await this.isConditionalMediationAvailable())) {
+    if (!(await this.isConditionalGetAvailable())) {
       return false
     }
     // TODO: warn if no <input autocomplete="webauthn"> is found?
