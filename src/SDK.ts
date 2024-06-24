@@ -64,6 +64,40 @@ class SDK {
     return !!window.PublicKeyCredential
   }
 
+  async isConditionalCreateAvailable(): Promise<boolean> {
+    if (!window.PublicKeyCredential) {
+      return false
+    }
+    // Modern/upcoming API
+    if (window.PublicKeyCredential.getClientCapabilities) {
+      const cc = await window.PublicKeyCredential.getClientCapabilities()
+      // Cast unexpected undefines to false
+      return cc.conditionalCreate === true
+    }
+    return false
+  }
+
+  async isConditionalGetAvailable(): Promise<boolean> {
+    if (!window.PublicKeyCredential) {
+      return false
+    }
+    // Modern/upcoming API
+    if (window.PublicKeyCredential.getClientCapabilities) {
+      // TODO: spec says `conditionalGet`; Safari (only browser so far with
+      // this API at all) has `conditionalMediation`
+      // https://bugs.webkit.org/show_bug.cgi?id=275765
+      const cc = await window.PublicKeyCredential.getClientCapabilities()
+      if (cc.conditionalGet !== undefined) {
+        return cc.conditionalGet
+      }
+    }
+    // More common (legacy?) API
+    if (window.PublicKeyCredential.isConditionalMediationAvailable) {
+      return await window.PublicKeyCredential.isConditionalMediationAvailable()
+    }
+    return false
+  }
+
   async startAuth(user: UserAuthenticationInfo): Promise<AuthResponse> {
     if (!this.isWebAuthnAvailable) {
       return { ok: false, error: 'webauthn_unavailable' }
@@ -116,17 +150,9 @@ class SDK {
   }
 
   async handleAutofill(callback: (arg0: AuthResponse) => void) {
-    if (!this.isWebAuthnAvailable) {
+    if (!(await this.isConditionalGetAvailable())) {
       return false
     }
-    if (!PublicKeyCredential.isConditionalMediationAvailable) {
-      return false
-    }
-    const isCMA = await PublicKeyCredential.isConditionalMediationAvailable()
-    if (!isCMA) {
-      return false
-    }
-
     // TODO: warn if no <input autocomplete="webauthn"> is found?
 
     // Autofill API is available. Make the calls and set it up.
@@ -264,15 +290,5 @@ const formatError = <T>(error: WebAuthnError, obj: Error): Result<T, WebAuthnErr
     message: obj.message,
   }
 })
-
-// type DictOf<T> = {[key: string]: T}
-type JsonEncodable =
-  | string
-  | number
-  | boolean
-  | null
-  | undefined
-  | { [key: string]: JsonEncodable }
-  | JsonEncodable[]
 
 export default SDK
