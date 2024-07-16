@@ -149,6 +149,30 @@ class SDK {
     }
   }
 
+  // TODO: name better
+  async handleAutomaticRegistration(user: UserRegistrationInfo, callback: (arg0: RegisterResponse) => void) {
+    if (!(await this.isConditionalCreateAvailable())) {
+      return false
+    }
+    // TODO: try/catch everywhere
+    const res = await this.api('/registration/createOptions', { upgrade: true }) as Result<CredentialCreationOptionsJSON, WebAuthnError>
+    if (!res.ok) {
+      // Optimistic request failed, do nothing
+      return
+    }
+
+    const signal = this.cancelExistingRequests()
+    const options = parseCreateOptions(user, res.data)
+    options.signal = signal
+
+    const credential = await navigator.credentials.create(options)
+    this.mustBePublicKeyCredential(credential)
+    const json = registrationResponseToJSON(credential)
+    // @ts-ignore
+    const response = await this.api('/registration/process', { credential: json, user }) as RegisterResponse
+    callback(response)
+  }
+
   async handleAutofill(callback: (arg0: AuthResponse) => void) {
     if (!(await this.isConditionalGetAvailable())) {
       return false

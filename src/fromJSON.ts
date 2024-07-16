@@ -28,6 +28,10 @@ export const parseCreateOptions = (user: UserRegistrationInfo, json: CredentialC
   }
 
   let createOptions: CredentialCreationOptions = {}
+  // Can this be non-conditional?
+  if (json.mediation) {
+    createOptions.mediation = json.mediation
+  }
 
   // TODO: restore parseCreationOptionsFromJSON (see #16+#17)
   createOptions.publicKey = {
