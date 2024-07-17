@@ -129,8 +129,7 @@ class SDK {
    * Conditional mediation APIs
    */
 
-  // TODO: name better
-  async handleAutomaticRegistration(user: UserRegistrationInfo, callback: (arg0: RegisterResponse) => void) {
+  async createInBackground(user: UserRegistrationInfo, callback: (arg0: RegisterResponse) => void) {
     if (!(await this.isConditionalCreateAvailable())) {
       return false
     }
