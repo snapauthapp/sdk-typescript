@@ -13,14 +13,12 @@ export const parseRequestOptions = (json: CredentialRequestOptionsJSON): Credent
     allowCredentials: json.publicKey.allowCredentials?.map(parseDescriptor),
     challenge: toAB(json.publicKey.challenge),
   }
-  let pk = json.publicKey
-  // add abort signal?
   return getOptions
 }
 
 export const parseCreateOptions = (user: UserRegistrationInfo, json: CredentialCreationOptionsJSON): CredentialCreationOptions => {
-  // Locally merge in user.name and displayName - they are never sent out and
-  // not part of the server response.
+  // Locally merge in user.name and displayName - they are never sent out (see
+  // filterRegistrationData) and thus are not part of the server response.
   json.publicKey.user = {
     ...json.publicKey.user,
     name: user.name,
@@ -28,10 +26,7 @@ export const parseCreateOptions = (user: UserRegistrationInfo, json: CredentialC
   }
 
   let createOptions: CredentialCreationOptions = {}
-  // Can this be non-conditional?
-  if (json.mediation) {
-    createOptions.mediation = json.mediation
-  }
+  createOptions.mediation = json.mediation
 
   // TODO: restore parseCreationOptionsFromJSON (see #16+#17)
   createOptions.publicKey = {
@@ -44,7 +39,6 @@ export const parseCreateOptions = (user: UserRegistrationInfo, json: CredentialC
     }
   }
 
-  // TODO: abortSignal?
   return createOptions
 }
 
@@ -52,14 +46,3 @@ const parseDescriptor = (json: PublicKeyCredentialDescriptorJSON): PublicKeyCred
   ...json,
   id: toAB(json.id),
 })
-
-/**
- * Add WebAuthn Level 3 type info that's missing from TS
- */
-interface PublicKeyCredentialStaticMethods {
-  parseCreationOptionsFromJSON?: (data: PublicKeyCredentialCreationOptionsJSON) => PublicKeyCredentialCreationOptions
-  parseRequestOptionsFromJSON?: (data: PublicKeyCredentialRequestOptionsJSON) => PublicKeyCredentialRequestOptions
-  // copying these from the original version :shrug:
-  // isConditionalMediationAvailable?: () => Promise<boolean>
-}
-declare var PublicKeyCredential: PublicKeyCredentialStaticMethods
