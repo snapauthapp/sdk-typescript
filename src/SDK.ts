@@ -64,6 +64,10 @@ class SDK {
     return !!window.PublicKeyCredential
   }
 
+  /**
+   * Browser support utilities
+   */
+
   async isConditionalCreateAvailable(): Promise<boolean> {
     if (!window.PublicKeyCredential) {
       return false
@@ -98,6 +102,10 @@ class SDK {
     return false
   }
 
+  /**
+   * Core async APIs
+   */
+
   async startAuth(user: UserAuthenticationInfo): Promise<AuthResponse> {
     if (!this.isWebAuthnAvailable) {
       return { ok: false, error: 'webauthn_unavailable' }
@@ -114,40 +122,12 @@ class SDK {
     if (!this.isWebAuthnAvailable) {
       return { ok: false, error: 'webauthn_unavailable' }
     }
-    // If you do this inside the try/catch it seems to fail. Some sort of race
-    // condition w/ the other request being canceled AFAICT. Doesn't make total
-    // sense to me and may be a browser specific issue.
-    const signal = this.cancelExistingRequests()
-    try {
-      // If user info provided, send only the id or handle. Do NOT send name or
-      // displayName.
-      let remoteUserData: UserIdOrHandle | undefined
-      if (user.id || user.handle) {
-        remoteUserData = {
-          id: user.id,
-          // @ts-ignore figure this type hack out later
-          handle: user.handle,
-        }
-      }
-
-      const res = await this.api('/registration/createOptions', { user: remoteUserData }) as Result<CredentialCreationOptionsJSON, WebAuthnError>
-      if (!res.ok) {
-        return res
-      }
-      const options = parseCreateOptions(user, res.data)
-      options.signal = signal
-
-      const credential = await navigator.credentials.create(options)
-      this.mustBePublicKeyCredential(credential)
-      const json = registrationResponseToJSON(credential)
-
-      // @ts-ignore
-      const response = await this.api('/registration/process', { credential: json, user }) as RegisterResponse
-      return response
-    } catch (error) {
-      return error instanceof Error ? this.convertCredentialsError(error) : this.genericError(error)
-    }
+    return await this.doRegister(user, false)
   }
+
+  /**
+   * Conditional mediation APIs
+   */
 
   // TODO: name better
   async handleAutomaticRegistration(user: UserRegistrationInfo, callback: (arg0: RegisterResponse) => void) {
@@ -155,22 +135,20 @@ class SDK {
       return false
     }
     // TODO: try/catch everywhere
-    const res = await this.api('/registration/createOptions', { upgrade: true }) as Result<CredentialCreationOptionsJSON, WebAuthnError>
-    if (!res.ok) {
-      // Optimistic request failed, do nothing
-      return
+    // const res = await this.api('/registration/createOptions', { upgrade: true }) as Result<CredentialCreationOptionsJSON, WebAuthnError>
+    // if (!res.ok) {
+    //   // Optimistic request failed, do nothing
+    //   return
+    // }
+
+    // const options = parseCreateOptions(user, res.data)
+    const response = await this.doRegister(user, true)
+    if (response.ok) {
+      callback(response)
+    } else {
+      // Conditional registration failed. For now, do nothing. Documented
+      // behavior is only to run callback on success.
     }
-
-    const signal = this.cancelExistingRequests()
-    const options = parseCreateOptions(user, res.data)
-    options.signal = signal
-
-    const credential = await navigator.credentials.create(options)
-    this.mustBePublicKeyCredential(credential)
-    const json = registrationResponseToJSON(credential)
-    // @ts-ignore
-    const response = await this.api('/registration/process', { credential: json, user }) as RegisterResponse
-    callback(response)
   }
 
   async handleAutofill(callback: (arg0: AuthResponse) => void) {
@@ -195,6 +173,40 @@ class SDK {
     }
   }
 
+  /**
+   * Internal utilities
+   */
+
+  private async doRegister(user: UserRegistrationInfo, upgrade: boolean): Promise<RegisterResponse> {
+    const remoteUserData = this.filterRegistrationData(user)
+    const res = await this.api('/registration/createOptions', {
+      user: remoteUserData,
+      upgrade,
+    }) as Result<CredentialCreationOptionsJSON, WebAuthnError>
+    if (!res.ok) {
+      return res
+    }
+
+    const options = parseCreateOptions(user, res.data)
+
+    // If you do this inside the try/catch it seems to fail. Some sort of race
+    // condition w/ the other request being canceled AFAICT. Doesn't make total
+    // sense to me and may be a browser specific issue.
+    const signal = this.cancelExistingRequests()
+    try {
+      options.signal = signal
+      const credential = await navigator.credentials.create(options)
+      this.mustBePublicKeyCredential(credential)
+      const json = registrationResponseToJSON(credential)
+      return await this.api('/registration/process', {
+        credential: json as unknown as JsonEncodable,
+        user: remoteUserData,
+      }) as RegisterResponse
+    } catch (error) {
+      return error instanceof Error ? this.convertCredentialsError(error) : this.genericError(error)
+    }
+  }
+
   private async doAuth(options: CredentialRequestOptions, user: UserIdOrHandle|undefined): Promise<AuthResponse> {
     const signal = this.cancelExistingRequests()
     try {
@@ -212,6 +224,9 @@ class SDK {
     }
   }
 
+  /**
+   * API wrapper. Catches and foramts network errors
+   */
   private async api(path: string, body: JsonEncodable): Promise<Result<any, WebAuthnError>> {
     const headers = new Headers({
       Accept: 'application/json',
@@ -301,6 +316,22 @@ class SDK {
     const ac = new AbortController()
     this.abortSignals = [ac]
     return ac.signal
+  }
+
+  /**
+   * Privacy enhancement: removes data from network request not needed by
+   * backend to complete registration
+   */
+  private filterRegistrationData(user: UserRegistrationInfo): UserIdOrHandle|undefined {
+    // If user info provided, send only the id or handle. Do NOT send name or
+    // displayName.
+    if (user.id || user.handle) {
+      return {
+        id: user.id,
+          // @ts-ignore figure this type hack out later
+        handle: user.handle,
+      }
+    }
   }
 
 }
