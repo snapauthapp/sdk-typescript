@@ -265,14 +265,4 @@ const formatError = <T>(error: WebAuthnError, obj: Error): Result<T, WebAuthnErr
   }
 })
 
-// type DictOf<T> = {[key: string]: T}
-type JsonEncodable =
-  | string
-  | number
-  | boolean
-  | null
-  | undefined
-  | { [key: string]: JsonEncodable }
-  | JsonEncodable[]
-
 export default SDK
