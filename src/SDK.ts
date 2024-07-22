@@ -130,18 +130,17 @@ class SDK {
    * Conditional mediation APIs
    */
 
+  /**
+   * This method is in BETA, is NOT subject to Semantic Versioning, and may
+   * change in any version.
+   *
+   * @ignore
+   */
   async createInBackground(user: UserRegistrationInfo, callback: (arg0: RegisterResponse) => void) {
     if (!(await this.isConditionalCreateAvailable())) {
       return false
     }
-    // TODO: try/catch everywhere
-    // const res = await this.api('/registration/createOptions', { upgrade: true }) as Result<CredentialCreationOptionsJSON, WebAuthnError>
-    // if (!res.ok) {
-    //   // Optimistic request failed, do nothing
-    //   return
-    // }
 
-    // const options = parseCreateOptions(user, res.data)
     const response = await this.doRegister(user, true)
     if (response.ok) {
       callback(response)
