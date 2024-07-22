@@ -103,7 +103,7 @@ class SDK {
     if (!this.isWebAuthnAvailable) {
       return { ok: false, error: 'webauthn_unavailable' }
     }
-    const res = await this.api('/auth/createOptions', { user }) as Result<CredentialRequestOptionsJSON, WebAuthnError>
+    const res = await this.api('/assertion/options', { user }) as Result<CredentialRequestOptionsJSON, WebAuthnError>
     if (!res.ok) {
       return res
     }
@@ -131,7 +131,7 @@ class SDK {
         }
       }
 
-      const res = await this.api('/registration/createOptions', { user: remoteUserData }) as Result<CredentialCreationOptionsJSON, WebAuthnError>
+      const res = await this.api('/attestation/options', { user: remoteUserData }) as Result<CredentialCreationOptionsJSON, WebAuthnError>
       if (!res.ok) {
         return res
       }
@@ -143,7 +143,7 @@ class SDK {
       const json = registrationResponseToJSON(credential)
 
       // @ts-ignore
-      const response = await this.api('/registration/process', { credential: json, user }) as RegisterResponse
+      const response = await this.api('/attestation/process', { credential: json, user }) as RegisterResponse
       return response
     } catch (error) {
       return error instanceof Error ? this.convertCredentialsError(error) : this.genericError(error)
@@ -157,7 +157,7 @@ class SDK {
     // TODO: warn if no <input autocomplete="webauthn"> is found?
 
     // Autofill API is available. Make the calls and set it up.
-    const res = await this.api('/auth/createOptions', {}) as Result<CredentialRequestOptionsJSON, WebAuthnError>
+    const res = await this.api('/assertion/options', {}) as Result<CredentialRequestOptionsJSON, WebAuthnError>
     if (!res.ok) {
       // This results in a silent failure. Intetional but subject to change.
       return
@@ -180,7 +180,7 @@ class SDK {
       this.mustBePublicKeyCredential(credential)
       const json = authenticationResponseToJSON(credential)
       // @ts-ignore
-      return await this.api('/auth/process', {
+      return await this.api('/assertion/process', {
         credential: json,
         user,
       })
