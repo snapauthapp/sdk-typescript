@@ -111,7 +111,7 @@ class SDK {
     if (!this.isWebAuthnAvailable) {
       return { ok: false, error: 'webauthn_unavailable' }
     }
-    const res = await this.api('/auth/createOptions', { user }) as Result<CredentialRequestOptionsJSON, WebAuthnError>
+    const res = await this.api('/assertion/options', { user }) as Result<CredentialRequestOptionsJSON, WebAuthnError>
     if (!res.ok) {
       return res
     }
@@ -158,7 +158,7 @@ class SDK {
     // TODO: warn if no <input autocomplete="webauthn"> is found?
 
     // Autofill API is available. Make the calls and set it up.
-    const res = await this.api('/auth/createOptions', {}) as Result<CredentialRequestOptionsJSON, WebAuthnError>
+    const res = await this.api('/assertion/options', {}) as Result<CredentialRequestOptionsJSON, WebAuthnError>
     if (!res.ok) {
       // This results in a silent failure. Intetional but subject to change.
       return
@@ -179,7 +179,7 @@ class SDK {
 
   private async doRegister(user: UserRegistrationInfo, upgrade: boolean): Promise<RegisterResponse> {
     const remoteUserData = this.filterRegistrationData(user)
-    const res = await this.api('/registration/createOptions', {
+    const res = await this.api('/attestation/options', {
       user: remoteUserData,
       upgrade,
     }) as Result<CredentialCreationOptionsJSON, WebAuthnError>
@@ -198,7 +198,7 @@ class SDK {
       const credential = await navigator.credentials.create(options)
       this.mustBePublicKeyCredential(credential)
       const json = registrationResponseToJSON(credential)
-      return await this.api('/registration/process', {
+      return await this.api('/attestation/process', {
         credential: json as unknown as JsonEncodable,
         user: remoteUserData,
       }) as RegisterResponse
@@ -215,7 +215,7 @@ class SDK {
       this.mustBePublicKeyCredential(credential)
       const json = authenticationResponseToJSON(credential)
       // @ts-ignore
-      return await this.api('/auth/process', {
+      return await this.api('/assertion/process', {
         credential: json,
         user,
       })
