@@ -6,6 +6,7 @@ module.exports = {
   target: 'web',
   mode: 'production',
   output: {
+    clean: true,
     filename: 'index.js',
     path: path.resolve(__dirname, 'dist'),
     library: 'SnapAuth',
