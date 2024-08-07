@@ -108,12 +108,23 @@ class SDK {
    * Core async APIs
    */
 
+  async startRegister(user: UserRegistrationInfo): Promise<RegisterResponse> {
+    if (!this.isWebAuthnAvailable) {
+      return { ok: false, error: 'webauthn_unavailable' }
+    }
+    return await this.doRegister(user, false)
+  }
+
   async startAuth(user: UserAuthenticationInfo): Promise<AuthResponse> {
     if (!this.isWebAuthnAvailable) {
       return { ok: false, error: 'webauthn_unavailable' }
     }
     return await this.doAuth(user)
   }
+
+  /**
+   * Conditional mediation (background) APIs
+   */
 
   async autofill(): Promise<AuthResponse> {
     // TODO: warn if no <input autocomplete="webauthn"> is found?
@@ -123,38 +134,7 @@ class SDK {
     return await this.doAuth(undefined)
   }
 
-  async startRegister(user: UserRegistrationInfo): Promise<RegisterResponse> {
-    if (!this.isWebAuthnAvailable) {
-      return { ok: false, error: 'webauthn_unavailable' }
-    }
-    return await this.doRegister(user, false)
-  }
-
-  /**
-   * Conditional mediation APIs
-   */
-
-  /**
-   * This method is in BETA, is NOT subject to Semantic Versioning, and may
-   * change in any version.
-   *
-   * @ignore
-   */
-  async createInBackground(user: UserRegistrationInfo, callback: (arg0: RegisterResponse) => void) {
-    if (!(await this.isConditionalCreateAvailable())) {
-      return false
-    }
-
-    const response = await this.doRegister(user, true)
-    if (response.ok) {
-      callback(response)
-    } else {
-      // Conditional registration failed. For now, do nothing. Documented
-      // behavior is only to run callback on success.
-    }
-  }
-
-  async createInBackground2(user: UserRegistrationInfo): Promise<RegisterResponse> {
+  async createInBackground(user: UserRegistrationInfo): Promise<RegisterResponse> {
     if (!(await this.isConditionalCreateAvailable())) {
       return { ok: false, error: 'api_unsupported_in_browser' }
     }
