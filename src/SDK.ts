@@ -155,7 +155,8 @@ class SDK {
   }
 
   /**
-   * @deprecated use `await autofill()` instead
+   * @deprecated use `await autofill()` instead, and ignore non-successful
+   * responses. This method will be removed prior to 1.0.
    */
   async handleAutofill(callback: (arg0: AuthResponse) => void) {
     // TODO: await autofill(), callback(res) if ok
