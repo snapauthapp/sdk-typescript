@@ -57,14 +57,14 @@ Browsers will ignore most WebAuthn requests that are not in response to a user g
 const registration = await snapAuth.startRegister({ name })
 if (registration.ok) {
   const token = registration.data.token
-  // Send token to your backend to use the /registration/attach API
+  // Send token to your backend to use the /credential/create API
 } else {
   // Inspect registration.error and decide how best to proceed
 }
 ```
 
 > [!IMPORTANT]
-> You MUST send the token to the backend [`/registration/attach`](https://docs.snapauth.app/server.html#attach-registration-token) API to associate it with the user.
+> You MUST send the token to the backend [`/credential/create`](https://docs.snapauth.app/server.html#create-a-credential) API to associate it with the user.
 > Until this is done, the user will not be able to use their new credential.
 >
 > For security, the token expires in a few minutes.
