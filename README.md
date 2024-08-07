@@ -12,6 +12,7 @@ If you're looking for the _server_ integration, check out [`@snapauth/node-sdk`]
 | [SnapAuth Docs](https://docs.snapauth.app)
 | [Dashboard](https://dashboard.snapauth.app)
 | [Github](https://github.com/snapauthapp/sdk-typescript)
+| [NPM](https://www.npmjs.com/package/@snapauth/sdk)
 
 [![GitHub Release](https://img.shields.io/github/v/release/snapauthapp/sdk-typescript)](https://github.com/snapauthapp/sdk-typescript/releases)
 [![Test](https://github.com/snapauthapp/sdk-typescript/actions/workflows/test.yml/badge.svg)](https://github.com/snapauthapp/sdk-typescript/actions/workflows/test.yml)
