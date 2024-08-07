@@ -1,6 +1,6 @@
 # SnapAuth TypeScript/JavaScript SDK
 
-This is the official TS/JS SDK for [SnapAuth](https://www.snapauth.app/?utm_source=GitHub&utm_campaign=sdk&utm_content=sdk-typescript)
+This is the official TS/JS SDK for [SnapAuth](https://www.snapauth.app/?utm_source=GitHub&utm_campaign=sdk&utm_content=sdk-typescript).
 
 SnapAuth will let you add passkey support to your web (and native) app in a snap!
 Add strong multi-factor authentication or go fully passwordless while maintaining a great, frictionless user experience.
@@ -80,12 +80,12 @@ if (registration.ok) {
 The `name` value is used completely locally, and _is not sent to SnapAuth's servers_.
 This is should be a login handle such as a username or email address.
 
+You may also set `displayName`, though browsers typically (counter-intuitively) ignore `displayName` in favor of `name`.
+
 > [!WARNING]
 > The `name` field cannot be changed at this time - it's not supported by browsers.
 > Once browser APIs exist to modify it, we will add support to the SDK.
 > See [#40](https://github.com/snapauthapp/sdk-typescript/issues/40) for details.
-
-You may also set `displayName`, though browsers typically (counter-intuitively) ignore `displayName` in favor of `name`.
 
 
 ### Authenticating
