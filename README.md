@@ -1,19 +1,26 @@
 # SnapAuth TypeScript/JavaScript SDK
 
-The official TS/JS SDK for SnapAuth 🫰
+This is the official TS/JS SDK for [SnapAuth](https://www.snapauth.app/?utm_source=GitHub&utm_campaign=sdk&utm_content=sdk-typescript)
+
+SnapAuth will let you add passkey support to your web (and native) app in a snap!
+Add strong multi-factor authentication or go fully passwordless while maintaining a great, frictionless user experience.
 
 This is for _client_ code.
 If you're looking for the _server_ integration, check out [`@snapauth/node-sdk`](https://github.com/snapauthapp/sdk-node).
 
+[SnapAuth Homepage](https://www.snapauth.app?utm_source=GitHub&utm_campaign=sdk&utm_content=sdk-typescript)
+| [SnapAuth Docs](https://docs.snapauth.app)
+| [Dashboard](https://dashboard.snapauth.app)
+| [Github](https://github.com/snapauthapp/sdk-typescript)
+
+[![GitHub Release](https://img.shields.io/github/v/release/snapauthapp/sdk-typescript)](https://github.com/snapauthapp/sdk-typescript/releases)
+[![Test](https://github.com/snapauthapp/sdk-typescript/actions/workflows/test.yml/badge.svg)](https://github.com/snapauthapp/sdk-typescript/actions/workflows/test.yml)
+![GitHub License](https://img.shields.io/github/license/snapauthapp/sdk-typescript)
+
 [![NPM Version](https://img.shields.io/npm/v/%40snapauth%2Fsdk)](https://www.npmjs.com/package/@snapauth/sdk)
 ![npm bundle size](https://img.shields.io/bundlephobia/minzip/%40snapauth%2Fsdk)
 ![NPM Type Definitions](https://img.shields.io/npm/types/%40snapauth%2Fsdk)
-![GitHub License](https://img.shields.io/github/license/snapauthapp/sdk-typescript)
 
-- [SnapAuth Homepage](https://www.snapauth.app)
-- [Docs](https://docs.snapauth.app)
-- [Dashboard](https://dashboard.snapauth.app)
-- [Github](https://github.com/snapauthapp/sdk-typescript)
 
 ## Installation and Setup
 ### Node
@@ -76,7 +83,7 @@ This is should be a login handle such as a username or email address.
 > [!WARNING]
 > The `name` field cannot be changed at this time - it's not supported by browsers.
 > Once browser APIs exist to modify it, we will add support to the SDK.
-> See #40.
+> See [#40](https://github.com/snapauthapp/sdk-typescript/issues/40) for details.
 
 You may also set `displayName`, though browsers typically (counter-intuitively) ignore `displayName` in favor of `name`.
 
