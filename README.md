@@ -40,7 +40,7 @@ const snapAuth = new SDK('pubkey_your_value')
 
 ### Directly linking (UMD)
 ```html
-<script src="https://unpkg.com/@snapauth/sdk@0.1.4/dist/index.js"></script>
+<script src="https://unpkg.com/@snapauth/sdk@0.1.5/dist/index.js"></script>
 <script type="text/javascript">
 const snapAuth = new SnapAuth.SDK('pubkey_your_value')
 </script>
