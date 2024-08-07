@@ -117,36 +117,41 @@ To take advantage of this, you need two things:
 <input type="text" autocomplete="username webauthn" placeholder="Username" />
 ```
 
-2) Run the `handleAutofill` API. This takes a callback which runs on successful authentication using the autofill API:
+2) Run the `autofill` API.
+   This returns an `AuthResponse`, just like the modal `startAuth()` method.
 ```typescript
-// Type import is optional, but recommended.
-import { AuthResponse } from '@snapauth/sdk'
-const onSignIn = (auth: AuthResponse) => {
-  if (auth.ok) {
-    // send `auth.data.token` to your backend, as above
-  }
-}
-snapAuth.handleAutofill(onSignIn)
+const auth = await snapAuth.autofill()
 ```
 
-Unlike the direct startRegister and startAuth calls, handleAutofill CAN and SHOULD be called as early in the page lifecycle is possible (_not_ in response to a user gesture).
+Unlike the direct startRegister and startAuth calls, autofill CAN and SHOULD be called as early in the page lifecycle is possible (_not_ in response to a user gesture).
 This helps ensure that autofill can occur when a user interacts with the form field.
 
 > [!TIP]
-> Re-use the `handleAutofill` callback in the traditional flow to create a consistent experience:
+> Use the same logic to validate the the response from both `autofill()` and `startAuth()`.
+>
+> Avoid giving the user visual feedback if autofill returns an error.
 
 ```typescript
+import { AuthResponse } from '@snapauth/sdk'
 const validateAuth = async (auth: AuthResponse) => {
   if (auth.ok) {
-    await fetch(...) // send auth.data.token
+    await fetch(...) // send auth.data.token to your backend to sign in the user
   }
 }
 const onSignInSubmit = async (e) => {
-  // ...
+  // get `handle` (commonly username or email) from a form field or similar
   const auth = await snapAuth.startAuth({ handle })
-  await validateAuth(auth)
+  if (auth.ok) {
+      await validateAuth(auth)
+    } else {
+      // Display a message to the user, send to a different flow, etc.
+    }
 }
-sdk.handleAutofill(validateAuth)
+
+const afAuth = await snapauth.autofill()
+if (afAuth.ok) {
+    validateAuth(afAuth)
+}
 ```
 
 ## Building the SDK
