@@ -32,6 +32,7 @@ type WebAuthnError =
   | 'canceled_by_user'
   | 'invalid_domain'
   | 'browser_bug?'
+  | 'api_unsupported_in_browser'
   | 'unexpected'
 
 export type AuthResponse = Result<{ token: string }, WebAuthnError>
@@ -103,12 +104,15 @@ class SDK {
     if (!this.isWebAuthnAvailable) {
       return { ok: false, error: 'webauthn_unavailable' }
     }
-    const res = await this.api('/assertion/options', { user }) as Result<CredentialRequestOptionsJSON, WebAuthnError>
-    if (!res.ok) {
-      return res
+    return await this.doAuth(user)
+  }
+
+  async autofill(): Promise<AuthResponse> {
+    // TODO: warn if no <input autocomplete="webauthn"> is found?
+    if (!(await this.isConditionalGetAvailable())) {
+      return { ok: false, error: 'api_unsupported_in_browser' }
     }
-    const options = parseRequestOptions(res.data)
-    return await this.doAuth(options, user)
+    return await this.doAuth(undefined)
   }
 
   async startRegister(user: UserRegistrationInfo): Promise<RegisterResponse> {
@@ -150,29 +154,26 @@ class SDK {
     }
   }
 
+  /**
+   * @deprecated use `await autofill()` instead, and ignore non-successful
+   * responses. This method will be removed prior to 1.0.
+   */
   async handleAutofill(callback: (arg0: AuthResponse) => void) {
-    if (!(await this.isConditionalGetAvailable())) {
-      return false
-    }
-    // TODO: warn if no <input autocomplete="webauthn"> is found?
-
-    // Autofill API is available. Make the calls and set it up.
-    const res = await this.api('/assertion/options', {}) as Result<CredentialRequestOptionsJSON, WebAuthnError>
-    if (!res.ok) {
-      // This results in a silent failure. Intetional but subject to change.
-      return
-    }
-    const options = parseRequestOptions(res.data)
-    const response = await this.doAuth(options, undefined)
-    if (response.ok) {
-      callback(response)
-    } else {
-      // User aborted conditional mediation (UI doesn't even exist in all
-      // browsers). Do not run the callback.
+    // TODO: await autofill(), callback(res) if ok
+    const result = await this.autofill()
+    if (result.ok) {
+      callback(result)
     }
   }
 
-  private async doAuth(options: CredentialRequestOptions, user: UserIdOrHandle|undefined): Promise<AuthResponse> {
+  private async doAuth(user: UserIdOrHandle|undefined): Promise<AuthResponse> {
+    // Get the remotely-built WebAuthn options
+    const res = await this.api('/assertion/options', { user }) as Result<CredentialRequestOptionsJSON, WebAuthnError>
+    if (!res.ok) {
+      return res
+    }
+    const options = parseRequestOptions(res.data)
+
     const signal = this.cancelExistingRequests()
     try {
       options.signal = signal
