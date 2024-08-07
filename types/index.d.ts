@@ -122,6 +122,10 @@ declare global {
   }
 
 
+  interface CredentialCreationOptions {
+    // Only in draft spec
+    mediation?: CredentialMediationRequirement
+  }
 
 
 }
