@@ -104,12 +104,15 @@ class SDK {
     if (!this.isWebAuthnAvailable) {
       return { ok: false, error: 'webauthn_unavailable' }
     }
-    const res = await this.api('/assertion/options', { user }) as Result<CredentialRequestOptionsJSON, WebAuthnError>
-    if (!res.ok) {
-      return res
+    return await this.doAuth(user)
+  }
+
+  async autofill(): Promise<AuthResponse> {
+    // TODO: warn if no <input autocomplete="webauthn"> is found?
+    if (!(await this.isConditionalGetAvailable())) {
+      return { ok: false, error: 'api_unsupported_in_browser' }
     }
-    const options = parseRequestOptions(res.data)
-    return await this.doAuth(options, user)
+    return await this.doAuth(undefined)
   }
 
   async startRegister(user: UserRegistrationInfo): Promise<RegisterResponse> {
@@ -151,20 +154,6 @@ class SDK {
     }
   }
 
-  async autofill(): Promise<AuthResponse> {
-    // TODO: warn if no <input autocomplete="webauthn"> is found?
-    if (!(await this.isConditionalGetAvailable())) {
-      return { ok: false, error: 'api_unsupported_in_browser' }
-    }
-    // Autofill API is available. Make the calls and set it up.
-    const res = await this.api('/assertion/options', {}) as Result<CredentialRequestOptionsJSON, WebAuthnError>
-    if (!res.ok) {
-      return res
-    }
-    const options = parseRequestOptions(res.data)
-    return await this.doAuth(options, undefined)
-  }
-
   /**
    * @deprecated use `await autofill()` instead
    */
@@ -176,7 +165,14 @@ class SDK {
     }
   }
 
-  private async doAuth(options: CredentialRequestOptions, user: UserIdOrHandle|undefined): Promise<AuthResponse> {
+  private async doAuth(user: UserIdOrHandle|undefined): Promise<AuthResponse> {
+    // Get the remotely-built WebAuthn options
+    const res = await this.api('/assertion/options', { user }) as Result<CredentialRequestOptionsJSON, WebAuthnError>
+    if (!res.ok) {
+      return res
+    }
+    const options = parseRequestOptions(res.data)
+
     const signal = this.cancelExistingRequests()
     try {
       options.signal = signal
