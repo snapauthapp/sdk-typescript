@@ -32,6 +32,7 @@ type WebAuthnError =
   | 'canceled_by_user'
   | 'invalid_domain'
   | 'browser_bug?'
+  | 'api_unsupported_in_browser'
   | 'unexpected'
 
 export type AuthResponse = Result<{ token: string }, WebAuthnError>
@@ -150,25 +151,28 @@ class SDK {
     }
   }
 
-  async handleAutofill(callback: (arg0: AuthResponse) => void) {
-    if (!(await this.isConditionalGetAvailable())) {
-      return false
-    }
+  async autofill(): Promise<AuthResponse> {
     // TODO: warn if no <input autocomplete="webauthn"> is found?
-
+    if (!(await this.isConditionalGetAvailable())) {
+      return { ok: false, error: 'api_unsupported_in_browser' }
+    }
     // Autofill API is available. Make the calls and set it up.
     const res = await this.api('/assertion/options', {}) as Result<CredentialRequestOptionsJSON, WebAuthnError>
     if (!res.ok) {
-      // This results in a silent failure. Intetional but subject to change.
-      return
+      return res
     }
     const options = parseRequestOptions(res.data)
-    const response = await this.doAuth(options, undefined)
-    if (response.ok) {
-      callback(response)
-    } else {
-      // User aborted conditional mediation (UI doesn't even exist in all
-      // browsers). Do not run the callback.
+    return await this.doAuth(options, undefined)
+  }
+
+  /**
+   * @deprecated use `await autofill()` instead
+   */
+  async handleAutofill(callback: (arg0: AuthResponse) => void) {
+    // TODO: await autofill(), callback(res) if ok
+    const result = await this.autofill()
+    if (result.ok) {
+      callback(result)
     }
   }
 
