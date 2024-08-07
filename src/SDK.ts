@@ -32,6 +32,7 @@ type WebAuthnError =
   | 'canceled_by_user'
   | 'invalid_domain'
   | 'browser_bug?'
+  | 'api_unsupported_in_browser'
   | 'unexpected'
 
 export type AuthResponse = Result<{ token: string }, WebAuthnError>
@@ -150,6 +151,14 @@ class SDK {
     }
   }
 
+  async createInBackground2(user: UserRegistrationInfo): Promise<RegisterResponse> {
+    if (!(await this.isConditionalCreateAvailable())) {
+      return { ok: false, error: 'api_unsupported_in_browser' }
+    }
+
+    return await this.doRegister(user, true)
+  }
+
   async handleAutofill(callback: (arg0: AuthResponse) => void) {
     if (!(await this.isConditionalGetAvailable())) {
       return false
@@ -170,6 +179,22 @@ class SDK {
       // User aborted conditional mediation (UI doesn't even exist in all
       // browsers). Do not run the callback.
     }
+  }
+
+  async handleAutofil2(): Promise<AuthResponse> {
+    if (!(await this.isConditionalGetAvailable())) {
+      return { ok: false, error: 'api_unsupported_in_browser' }
+    }
+    // TODO: warn if no <input autocomplete="webauthn"> is found?
+
+    // Autofill API is available. Make the calls and set it up.
+    const res = await this.api('/assertion/options', {}) as Result<CredentialRequestOptionsJSON, WebAuthnError>
+    if (!res.ok) {
+      // This results in a silent failure. Intetional but subject to change.
+      return { ok: false, error: 'network_error' }
+    }
+    const options = parseRequestOptions(res.data)
+    return await this.doAuth(options, undefined)
   }
 
   /**
