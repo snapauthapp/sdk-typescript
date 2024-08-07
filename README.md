@@ -53,7 +53,7 @@ Browsers will ignore most WebAuthn requests that are not in response to a user g
 
 ```typescript
 // Get `name` from a field in your UI, your backend, etc.
-// This is what the user will see when authenticating
+// This should be what the user signs in with, such as a username or email address
 const registration = await snapAuth.startRegister({ name })
 if (registration.ok) {
   const token = registration.data.token
@@ -71,12 +71,12 @@ if (registration.ok) {
 > The response includes a `expiresAt` field indicating when this needs to be done.
 
 The `name` value is used completely locally, and _is not sent to SnapAuth's servers_.
-This is commonly something like a human name, email address, or login handle.
-This will be visible to the user when they sign in.
+This is should be a login handle such as a username or email address.
 
 > [!WARNING]
 > The `name` field cannot be changed at this time - it's not supported by browsers.
 > Once browser APIs exist to modify it, we will add support to the SDK.
+> See #40.
 
 You may also set `displayName`, though browsers typically (counter-intuitively) ignore `displayName` in favor of `name`.
 
