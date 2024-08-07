@@ -1,19 +1,27 @@
 # SnapAuth TypeScript/JavaScript SDK
 
-The official TS/JS SDK for SnapAuth 🫰
+This is the official TS/JS SDK for [SnapAuth](https://www.snapauth.app/?utm_source=GitHub&utm_campaign=sdk&utm_content=sdk-typescript).
+
+SnapAuth will let you add passkey support to your web (and native) app in a snap!
+Add strong multi-factor authentication or go fully passwordless while maintaining a great, frictionless user experience.
 
 This is for _client_ code.
 If you're looking for the _server_ integration, check out [`@snapauth/node-sdk`](https://github.com/snapauthapp/sdk-node).
 
+[SnapAuth Homepage](https://www.snapauth.app?utm_source=GitHub&utm_campaign=sdk&utm_content=sdk-typescript)
+| [SnapAuth Docs](https://docs.snapauth.app)
+| [Dashboard](https://dashboard.snapauth.app)
+| [Github](https://github.com/snapauthapp/sdk-typescript)
+| [NPM](https://www.npmjs.com/package/@snapauth/sdk)
+
+[![GitHub Release](https://img.shields.io/github/v/release/snapauthapp/sdk-typescript)](https://github.com/snapauthapp/sdk-typescript/releases)
+[![Test](https://github.com/snapauthapp/sdk-typescript/actions/workflows/test.yml/badge.svg)](https://github.com/snapauthapp/sdk-typescript/actions/workflows/test.yml)
+![GitHub License](https://img.shields.io/github/license/snapauthapp/sdk-typescript)
+
 [![NPM Version](https://img.shields.io/npm/v/%40snapauth%2Fsdk)](https://www.npmjs.com/package/@snapauth/sdk)
 ![npm bundle size](https://img.shields.io/bundlephobia/minzip/%40snapauth%2Fsdk)
 ![NPM Type Definitions](https://img.shields.io/npm/types/%40snapauth%2Fsdk)
-![GitHub License](https://img.shields.io/github/license/snapauthapp/sdk-typescript)
 
-- [SnapAuth Homepage](https://www.snapauth.app)
-- [Docs](https://docs.snapauth.app)
-- [Dashboard](https://dashboard.snapauth.app)
-- [Github](https://github.com/snapauthapp/sdk-typescript)
 
 ## Installation and Setup
 ### Node
@@ -53,32 +61,32 @@ Browsers will ignore most WebAuthn requests that are not in response to a user g
 
 ```typescript
 // Get `name` from a field in your UI, your backend, etc.
-// This is what the user will see when authenticating
+// This should be what the user signs in with, such as a username or email address
 const registration = await snapAuth.startRegister({ name })
 if (registration.ok) {
   const token = registration.data.token
-  // Send token to your backend to use the /registration/attach API
+  // Send token to your backend to use the /credential/create API
 } else {
   // Inspect registration.error and decide how best to proceed
 }
 ```
 
 > [!IMPORTANT]
-> You MUST send the token to the backend [`/registration/attach`](https://docs.snapauth.app/server.html#attach-registration-token) API to associate it with the user.
+> You MUST send the token to the backend [`/credential/create`](https://docs.snapauth.app/server.html#create-a-credential) API to associate it with the user.
 > Until this is done, the user will not be able to use their new credential.
 >
 > For security, the token expires in a few minutes.
 > The response includes a `expiresAt` field indicating when this needs to be done.
 
 The `name` value is used completely locally, and _is not sent to SnapAuth's servers_.
-This is commonly something like a human name, email address, or login handle.
-This will be visible to the user when they sign in.
+This is should be a login handle such as a username or email address.
+
+You may also set `displayName`, though browsers typically (counter-intuitively) ignore `displayName` in favor of `name`.
 
 > [!WARNING]
 > The `name` field cannot be changed at this time - it's not supported by browsers.
 > Once browser APIs exist to modify it, we will add support to the SDK.
-
-You may also set `displayName`, though browsers typically (counter-intuitively) ignore `displayName` in favor of `name`.
+> See [#40](https://github.com/snapauthapp/sdk-typescript/issues/40) for details.
 
 
 ### Authenticating
