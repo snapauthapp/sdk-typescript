@@ -134,7 +134,7 @@ class SDK {
     return await this.doAuth(undefined)
   }
 
-  async createInBackground(user: UserRegistrationInfo): Promise<RegisterResponse> {
+  async upgradeToPasskey(user: UserRegistrationInfo): Promise<RegisterResponse> {
     if (!(await this.isConditionalCreateAvailable())) {
       return { ok: false, error: 'api_unsupported_in_browser' }
     }
