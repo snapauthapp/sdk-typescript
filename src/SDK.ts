@@ -40,12 +40,13 @@ export type RegisterResponse = Result<{ token: string }, WebAuthnError>
 
 type UserIdOrHandle =
   | { id: string }
-  | { handle: string }
+  | { username: string }
 type OptionalUserIdOrHandle = UserIdOrHandle | undefined
 
 export type UserAuthenticationInfo = UserIdOrHandle
 export type UserRegistrationInfo = {
-  name: string
+  // name: string
+  username: string
   displayName?: string
   id?: string
   handle?: string
