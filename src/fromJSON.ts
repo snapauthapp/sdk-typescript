@@ -21,8 +21,8 @@ export const parseCreateOptions = (user: UserRegistrationInfo, json: CredentialC
   // filterRegistrationData) and thus are not part of the server response.
   json.publicKey.user = {
     ...json.publicKey.user,
-    name: user.name,
-    displayName: user.displayName ?? user.name,
+    name: user.username,
+    displayName: user.displayName ?? user.username,
   }
 
   let createOptions: CredentialCreationOptions = {}
