@@ -59,6 +59,7 @@ class SDK {
   constructor(publicKey: string, host: string = 'https://api.snapauth.app') {
     this.apiKey = publicKey
     this.host = host
+    window.addEventListener('beforeunload', this.cancelExistingRequests)
   }
 
   get isWebAuthnAvailable() {
