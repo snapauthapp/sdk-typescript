@@ -90,7 +90,7 @@ You may also set `displayName`, though browsers typically (counter-intuitively) 
 
 #### Automatic Passkey Upgrades
 
-Some browsers support automatic passkey upgrades (and others will be adding support soon).
+Browsers and operating systems are adding support for [automatic passkey upgrades](/automatic-passkeys).
 These allow adding passkeys to existing accounts without having to send the user through a separate UI flow.
 If the browser supports it and the credential manager deems it appropriate, it will automatically create a passkey for the user.
 See [the WWDC24 session video](https://developer.apple.com/videos/play/wwdc2024/10125/?time=38) for more information (automatic passkey upgrades are not Apple-specific).
