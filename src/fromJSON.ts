@@ -18,7 +18,7 @@ export const parseRequestOptions = (json: CredentialRequestOptionsJSON): Credent
 
 type CombinedRegistrationFormat =
   | UserRegistrationInfo
-  | { name: string, displayName?: string }
+  | { name: string, displayName?: string } // Legacy registration: name instead of username
 
 export const parseCreateOptions = (user: CombinedRegistrationFormat, json: CredentialCreationOptionsJSON): CredentialCreationOptions => {
   // Combine the server response (w/ user.id) and the client data into the
