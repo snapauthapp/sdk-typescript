@@ -16,13 +16,20 @@ export const parseRequestOptions = (json: CredentialRequestOptionsJSON): Credent
   return getOptions
 }
 
-export const parseCreateOptions = (user: UserRegistrationInfo, json: CredentialCreationOptionsJSON): CredentialCreationOptions => {
-  // Locally merge in user.name and displayName - they are never sent out (see
-  // filterRegistrationData) and thus are not part of the server response.
+type CombinedRegistrationFormat =
+  | UserRegistrationInfo
+  | { name: string, displayName?: string }
+
+export const parseCreateOptions = (user: CombinedRegistrationFormat, json: CredentialCreationOptionsJSON): CredentialCreationOptions => {
+  // Combine the server response (w/ user.id) and the client data into the
+  // webAuthn structure, which requires `id`, `name`, and `displayName`.
+  // What WebAuthn calls `name` we call `username` to enhance usage clarity.
+  //
+  // Pre-1.0, continue to support `name` as well.
   json.publicKey.user = {
     ...json.publicKey.user,
-    name: user.username ?? user.handle,
-    displayName: user.displayName ?? user.username ?? user.handle,
+    name: user.username ?? user.name,
+    displayName: user.displayName ?? user.username ?? user.name,
   }
 
   let createOptions: CredentialCreationOptions = {}
