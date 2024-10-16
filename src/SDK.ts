@@ -314,11 +314,11 @@ class SDK {
   private filterRegistrationData(user: UserRegistrationInfo): UserIdOrUsername|undefined {
     // If user info provided, send only the id or handle. Do NOT send name or
     // displayName.
-    if (user.id || user.handle) {
+    if (user.id || user.username) {
       return {
         id: user.id,
-          // @ts-ignore figure this type hack out later
-        handle: user.handle,
+        // @ts-ignore figure this type hack out later
+        username: user.username,
       }
     }
   }
