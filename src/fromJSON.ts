@@ -28,7 +28,9 @@ export const parseCreateOptions = (user: CombinedRegistrationFormat, json: Crede
   // Pre-1.0, continue to support `name` as well.
   json.publicKey.user = {
     ...json.publicKey.user,
+    // @ts-ignore It's incorrectly inferring username|name
     name: user.username ?? user.name,
+    // @ts-ignore same
     displayName: user.displayName ?? user.username ?? user.name,
   }
 
