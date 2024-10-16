@@ -38,17 +38,15 @@ type WebAuthnError =
 export type AuthResponse = Result<{ token: string }, WebAuthnError>
 export type RegisterResponse = Result<{ token: string }, WebAuthnError>
 
-type UserIdOrHandle =
+type UserIdOrUsername =
   | { id: string }
-  | { handle: string }
-type OptionalUserIdOrHandle = UserIdOrHandle | undefined
+  | { username: string }
+type OptionalUserIdOrUsername = UserIdOrUsername | undefined
 
-export type UserAuthenticationInfo = UserIdOrHandle
+export type UserAuthenticationInfo = UserIdOrUsername
 export type UserRegistrationInfo = {
-  name: string
+  username: string
   displayName?: string
-  id?: string
-  handle?: string
 }
 
 class SDK {
@@ -160,9 +158,8 @@ class SDK {
    */
 
   private async doRegister(user: UserRegistrationInfo, upgrade: boolean): Promise<RegisterResponse> {
-    const remoteUserData = this.filterRegistrationData(user)
+    // User info is client-only during this stage of registration
     const res = await this.api('/attestation/options', {
-      user: remoteUserData,
       upgrade,
     }) as Result<CredentialCreationOptionsJSON, WebAuthnError>
     if (!res.ok) {
@@ -182,14 +179,13 @@ class SDK {
       const json = registrationResponseToJSON(credential)
       return await this.api('/attestation/process', {
         credential: json as unknown as JsonEncodable,
-        user: remoteUserData,
       }) as RegisterResponse
     } catch (error) {
       return error instanceof Error ? this.convertCredentialsError(error) : this.genericError(error)
     }
   }
 
-  private async doAuth(user: UserIdOrHandle|undefined): Promise<AuthResponse> {
+  private async doAuth(user: UserIdOrUsername|undefined): Promise<AuthResponse> {
     // Get the remotely-built WebAuthn options
     const res = await this.api('/assertion/options', { user }) as Result<CredentialRequestOptionsJSON, WebAuthnError>
     if (!res.ok) {
@@ -306,23 +302,6 @@ class SDK {
     this.abortSignals = [ac]
     return ac.signal
   }
-
-  /**
-   * Privacy enhancement: removes data from network request not needed by
-   * backend to complete registration
-   */
-  private filterRegistrationData(user: UserRegistrationInfo): UserIdOrHandle|undefined {
-    // If user info provided, send only the id or handle. Do NOT send name or
-    // displayName.
-    if (user.id || user.handle) {
-      return {
-        id: user.id,
-          // @ts-ignore figure this type hack out later
-        handle: user.handle,
-      }
-    }
-  }
-
 }
 
 const formatError = <T>(error: WebAuthnError, obj: Error): Result<T, WebAuthnError> => ({
