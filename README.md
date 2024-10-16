@@ -60,9 +60,9 @@ Browsers will ignore most WebAuthn requests that are not in response to a user g
 ### Registering a Credential
 
 ```typescript
-// Get `name` from a field in your UI, your backend, etc.
+// Get `username` from a field in your UI, your backend, etc.
 // This should be what the user signs in with, such as a username or email address
-const registration = await snapAuth.startRegister({ name })
+const registration = await snapAuth.startRegister({ username })
 if (registration.ok) {
   const token = registration.data.token
   // Send token to your backend to use the /credential/create API
@@ -78,13 +78,13 @@ if (registration.ok) {
 > For security, the token expires in a few minutes.
 > The response includes a `expiresAt` field indicating when this needs to be done.
 
-The `name` value is used completely locally, and _is not sent to SnapAuth's servers_.
+The `username` value is used completely locally, and _is not sent to SnapAuth's servers_.
 This is should be a login handle such as a username or email address.
 
-You may also set `displayName`, though browsers typically (counter-intuitively) ignore `displayName` in favor of `name`.
+You may also set `displayName`, though browsers typically (counter-intuitively) ignore `displayName` in favor of `username`.
 
 > [!WARNING]
-> The `name` field cannot be changed at this time - it's not supported by browsers.
+> The `username` field cannot be changed at this time - it's not supported by browsers.
 > Once browser APIs exist to modify it, we will add support to the SDK.
 > See [#40](https://github.com/snapauthapp/sdk-typescript/issues/40) for details.
 
@@ -100,9 +100,7 @@ Simply swap `startRegister` to `upgradeToPasskey`, and _avoid_ showing feedback 
 This should be called just _after_ the user signs in with a non-WebAuthn credential, such as a password or OTP code.
 
 ```typescript
-// Name should, again, be a "handle" that the user uses to sign in (username,
-// email, etc)
-const registration = await snapAuth.upgradeToPasskey({ name })
+const registration = await snapAuth.upgradeToPasskey({ username })
 if (registration.ok) {
   const token = registration.data.token
   // Send token to your backend to use the /credential/create API
@@ -120,20 +118,20 @@ You can call our API in any browser!
 
 ```typescript
 // This would typically be in an onClick/onSubmit handler
-const handle = document.getElementById('username').value // Adjust to your UI
-const auth = await snapAuth.startAuth({ handle })
+const username = document.getElementById('username').value // Adjust to your UI
+const auth = await snapAuth.startAuth({ username })
 if (auth.ok) {
   const token = auth.data.token
   // Send token to your backend to use the /auth/verify API
-  // It will return the verified user's id and handle, which you should use to
-  // sign in the user with your existing mechanism (cookie, token, etc)
+  // It will return the verified user's id, which you should use to sign in the
+  // user with your existing mechanism (cookie, token, etc)
 } else {
   // Inspect auth.error and decide how best to proceed
 }
 ```
 
-You may use `id` or `handle` when calling `startAuth()`.
-`id` is great when you already know who is signing in (returning user, MFA flows, etc); `handle` is more streamlined when initially authenticating.
+You may use `id` or `username` when calling `startAuth()`.
+`id` is great when you already know who is signing in (returning user, MFA flows, etc); `username` is more streamlined when initially authenticating.
 
 Both values are **case-insensitive**.
 
@@ -174,8 +172,8 @@ const validateAuth = async (auth: AuthResponse) => {
   }
 }
 const onSignInSubmit = async (e) => {
-  // get `handle` (commonly username or email) from a form field or similar
-  const auth = await snapAuth.startAuth({ handle })
+  // get `username` (commonly username or email) from a form field or similar
+  const auth = await snapAuth.startAuth({ username })
   if (auth.ok) {
       await validateAuth(auth)
     } else {
