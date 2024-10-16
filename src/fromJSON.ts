@@ -26,12 +26,12 @@ export const parseCreateOptions = (user: CombinedRegistrationFormat, json: Crede
   // What WebAuthn calls `name` we call `username` to enhance usage clarity.
   //
   // Pre-1.0, continue to support `name` as well.
+  // @ts-ignore It's incorrectly inferring username|name
+  const name = user.username ?? user.name
   json.publicKey.user = {
     ...json.publicKey.user,
-    // @ts-ignore It's incorrectly inferring username|name
-    name: user.username ?? user.name,
-    // @ts-ignore same
-    displayName: user.displayName ?? user.username ?? user.name,
+    name,
+    displayName: user.displayName ?? name,
   }
 
   let createOptions: CredentialCreationOptions = {}
